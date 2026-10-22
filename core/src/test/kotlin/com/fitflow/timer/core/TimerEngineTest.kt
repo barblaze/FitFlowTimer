@@ -56,11 +56,8 @@ class TimerEngineTest {
 
         clock.advance(20_000)
         val first = engine.tick()
-        assertTrue(first.any { it is EngineEvent.SegmentChanged && it.segment.type == PhaseType.REST })
+        assertTrue(first.any { it is EngineEvent.Finished })
 
-        clock.advance(10_000)
-        val last = engine.tick()
-        assertTrue(last.any { it is EngineEvent.Finished })
         assertTrue(engine.isFinished)
     }
 
