@@ -16,15 +16,9 @@ android {
     }
 
     signingConfigs {
-        val encoded = System.getenv("KEYSTORE_BASE64")
-        if (!encoded.isNullOrBlank()) {
+        val keystoreFile = file("${rootProject.projectDir}/../fitflow-release.p12")
+        if (keystoreFile.exists()) {
             create("release") {
-                val keystoreFile = File(project.layout.buildDirectory.get().asFile, "release.p12")
-                keystoreFile.parentFile?.mkdirs()
-                val input = java.io.ByteArrayInputStream(encoded.toByteArray())
-                val decoder = java.util.Base64.getMimeDecoder()
-                val decoded = decoder.wrap(input).readBytes()
-                keystoreFile.writeBytes(decoded)
                 storeFile = keystoreFile
                 storeType = "pkcs12"
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
