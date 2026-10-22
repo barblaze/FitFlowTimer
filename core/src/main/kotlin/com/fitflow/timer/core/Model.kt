@@ -17,6 +17,12 @@ data class PhaseSegment(
     val round: Int,
     val totalRounds: Int,
 ) : Serializable
+
+/**
+ * Configuracion completa de un entrenamiento de intervalos.
+ * Los tiempos van en segundos, las rondas y ciclos en unidades.
+ */
+data class WorkoutConfig(
     val mode: Mode = Mode.TABATA,
     val prepSeconds: Int = 10,
     val workSeconds: Int = 20,
