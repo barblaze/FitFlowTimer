@@ -16,7 +16,12 @@ android {
     }
 
     signingConfigs {
-        val keystoreFile = file("release.p12")
+        val keystorePath = System.getenv("FITFLOW_KEYSTORE_PATH")
+        val keystoreFile = if (!keystorePath.isNullOrBlank()) {
+            file(keystorePath)
+        } else {
+            file("release.p12")
+        }
         if (keystoreFile.exists()) {
             create("release") {
                 storeFile = keystoreFile
