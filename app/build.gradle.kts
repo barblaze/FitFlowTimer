@@ -18,25 +18,18 @@ android {
     signingConfigs {
         val encoded = System.getenv("KEYSTORE_BASE64")
         if (!encoded.isNullOrBlank()) {
-            val keystoreFile = File(project.layout.buildDirectory.get().asFile, "release.p12")
-            keystoreFile.parentFile?.mkdirs()
-            keystoreFile.writeBytes(java.util.Base64.getMimeDecoder().decode(encoded))
-
-            val configure: (com.android.build.api.dsl.SigningConfig) -> Unit = { signing ->
-                signing.storeFile = keystoreFile
-                signing.storeType = "pkcs12"
-                signing.storePassword = System.getenv("KEYSTORE_PASSWORD")
-                signing.keyAlias = System.getenv("KEY_ALIAS")
-                signing.keyPassword = System.getenv("KEY_PASSWORD")
-                signing.enableV1Signing = true
-                signing.enableV2Signing = true
-                signing.enableV3Signing = true
-            }
-
-            if (names.contains("release")) {
-                configure(getByName("release"))
-            } else {
-                configure(create("release"))
+            create("release") {
+                val keystoreFile = File(project.layout.buildDirectory.get().asFile, "release.p12")
+                keystoreFile.parentFile?.mkdirs()
+                keystoreFile.writeBytes(java.util.Base64.getMimeDecoder().decode(encoded))
+                storeFile = keystoreFile
+                storeType = "pkcs12"
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
             }
         }
     }
@@ -45,11 +38,7 @@ android {
         release {
             isMinifyEnabled = false
             isShrinkResources = false
-            signingConfig = if (!System.getenv("KEYSTORE_BASE64").isNullOrBlank()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 
