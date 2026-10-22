@@ -21,7 +21,7 @@ android {
             create("release") {
                 val keystoreFile = File(project.layout.buildDirectory.get().asFile, "release.p12")
                 keystoreFile.parentFile?.mkdirs()
-                val decoded = android.util.Base64.decode(encoded, android.util.Base64.DEFAULT)
+                val decoded = org.gradle.internal.impldep.com.google.common.io.BaseEncoding.base64().decode(encoded)
                 keystoreFile.writeBytes(decoded)
                 storeFile = keystoreFile
                 storeType = "pkcs12"
