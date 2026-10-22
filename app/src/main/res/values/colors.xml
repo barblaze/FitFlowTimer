@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#0E1116</color>
+    <color name="surface">#161B22</color>
+    <color name="brand">#22C55E</color>
+    <color name="text_primary">#F3F4F6</color>
+    <color name="text_secondary">#9CA3AF</color>
+    <color name="phase_preparation">#F59E0B</color>
+    <color name="phase_work">#22C55E</color>
+    <color name="phase_rest">#3B82F6</color>
+    <color name="phase_cycle_rest">#A855F7</color>
+    <color name="track">#263140</color>
+    <color name="ic_launcher_background">#0E1116</color>
+</resources>
