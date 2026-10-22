@@ -22,7 +22,7 @@ include(":core")
 // Asi los tests de :core se pueden ejecutar en local sin instalar el SDK Android.
 val hasAndroidSdk = System.getenv("ANDROID_HOME") != null ||
     System.getenv("ANDROID_SDK_ROOT") != null ||
-    rootProject.file("local.properties").exists()
+    java.io.File(settingsDir, "local.properties").exists()
 
 if (hasAndroidSdk) {
     include(":app")
