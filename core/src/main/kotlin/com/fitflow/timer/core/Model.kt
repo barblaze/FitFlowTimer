@@ -7,10 +7,16 @@ enum class Mode { TABATA, EMOM, AMRAP, CUSTOM }
 enum class PhaseType { PREPARATION, WORK, REST, REST_BETWEEN_CYCLES }
 
 /**
- * Configuracion completa de un entrenamiento de intervalos.
- * Los tiempos van en segundos, las rondas y ciclos en unidades.
+ * Segmento individual que forma parte de la secuencia generada por [PhasePlanner].
  */
-data class WorkoutConfig(
+data class PhaseSegment(
+    val type: PhaseType,
+    val durationSeconds: Int,
+    val cycle: Int,
+    val totalCycles: Int,
+    val round: Int,
+    val totalRounds: Int,
+) : Serializable
     val mode: Mode = Mode.TABATA,
     val prepSeconds: Int = 10,
     val workSeconds: Int = 20,
