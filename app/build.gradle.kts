@@ -21,7 +21,7 @@ android {
             create("release") {
                 val keystoreFile = File(project.layout.buildDirectory.get().asFile, "release.p12")
                 keystoreFile.parentFile?.mkdirs()
-                keystoreFile.writeBytes(java.util.Base64.getMimeDecoder().decode(encoded))
+                keystoreFile.writeBytes(java.util.Base64.getDecoder().decode(encoded))
                 storeFile = keystoreFile
                 storeType = "pkcs12"
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
