@@ -56,7 +56,7 @@ class TimerEngine(
         lastWholeSecond = -1
         halfwayFired = false
         segmentEndMs = clock.nowMs() + segments[0].durationSeconds * 1000L
-        announcer.announce(VoiceEvent.SessionStarting(totalMs / 1000))
+        announcer.announce(VoiceEvent.SessionStarting(totalMs / 1000L))
         announceSegmentStart(segments[0])
     }
 
@@ -176,7 +176,7 @@ class TimerEngine(
     private fun finish() {
         isRunning = false
         isFinished = true
-        announcer.announce(VoiceEvent.SessionFinished(totalMs / 1000))
+        announcer.announce(VoiceEvent.SessionFinished(totalMs / 1000L))
     }
 
     private fun announceSegmentStart(segment: PhaseSegment) {
