@@ -359,7 +359,7 @@ class TimerService : Service() {
         if (!settings.vibration) return
         @Suppress("DEPRECATION")
         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-        if (!vibrator.hasVibrator()) return
+        if (vibrator == null || !vibrator.hasVibrator()) return
         vibrator.vibrate(VibrationEffect.createOneShot(120L, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 
