@@ -18,7 +18,7 @@
         <activity
             android:name=".ui.SetupActivity"
             android:exported="true"
-            android:screenOrientation="fullUser">
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -28,7 +28,7 @@
         <activity
             android:name=".ui.WorkoutActivity"
             android:exported="false"
-            android:screenOrientation="fullUser" />
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout" />
 
         <service
             android:name=".service.TimerService"

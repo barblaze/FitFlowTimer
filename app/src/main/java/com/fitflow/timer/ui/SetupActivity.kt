@@ -8,8 +8,12 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
+import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.fitflow.timer.R
 import com.fitflow.timer.audio.BeepPlayer
@@ -23,6 +27,7 @@ import com.fitflow.timer.databinding.ActivitySetupBinding
 import com.fitflow.timer.databinding.RowParamBinding
 import com.fitflow.timer.databinding.RowSwitchBinding
 import com.fitflow.timer.service.TimerService
+import com.google.android.material.tabs.TabLayout
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -42,15 +47,48 @@ class SetupActivity : AppCompatActivity() {
         binding = ActivitySetupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        applySystemBars()
+        applyOrientation()
+
         store = ConfigStore(this)
         config = store.loadConfig()
         settings = store.loadSettings()
 
-        applyOrientation(settings.orientation)
+        setupTabs()
         setupModes()
         setupParameters()
         setupSettings()
         refreshSummary()
+
+        onBackPressedDispatcher.addCallback(this) {
+            moveTaskToBack(true)
+        }
+    }
+
+    private fun applySystemBars() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
+            insets
+        }
+    }
+
+    private fun applyOrientation() {
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    }
+
+    private fun setupTabs() {
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                binding.trainingScroll.isVisible = tab.position == 0
+                binding.settingsScroll.isVisible = tab.position == 1
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) = Unit
+
+            override fun onTabReselected(tab: TabLayout.Tab) = Unit
+        })
+        binding.tabLayout.selectTab(binding.tabLayout.getTabAt(0))
     }
 
     private fun setupModes() {
@@ -102,22 +140,10 @@ class SetupActivity : AppCompatActivity() {
         bindSwitch(binding.rowVibration, getString(R.string.setting_vibration), settings.vibration) {
             settings = settings.copy(vibration = it)
         }
-        bindSwitch(binding.rowVoice, getString(R.string.setting_voice), false) { }
-        binding.rowVoice.switchValue.isEnabled = false
-        binding.voiceHint.isVisible = true
-
-        binding.orientationGroup.check(
-            when (settings.orientation) {
-                OrientationMode.AUTOMATIC -> R.id.orientationAuto
-                OrientationMode.PORTRAIT -> R.id.orientationPortrait
-                OrientationMode.LANDSCAPE -> R.id.orientationLandscape
-            }
-        )
-        binding.orientationGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (!isChecked || bindingValues) return@addOnButtonCheckedListener
-            settings = settings.copy(orientation = orientationForButton(checkedId))
-            applyOrientation(settings.orientation)
+        bindSwitch(binding.rowVoice, getString(R.string.setting_voice), settings.voiceEnabled) {
+            settings = settings.copy(voiceEnabled = it)
         }
+        binding.voiceHint.isVisible = true
 
         binding.outputGroup.check(
             if (settings.soundOutput == SoundOutput.MEDIA) R.id.outputMedia else R.id.outputSystem
@@ -132,11 +158,14 @@ class SetupActivity : AppCompatActivity() {
         val sliderValue = ((settings.volume * 100f).roundToInt() / 5 * 5).coerceIn(0, 100)
         binding.volumeSlider.value = sliderValue.toFloat()
         binding.volumeSlider.addOnChangeListener { _, value, _ ->
-            settings = settings.copy(volume = value / 100f)
+            if (!bindingValues) {
+                settings = settings.copy(volume = value / 100f)
+            }
         }
 
         binding.testSoundButton.setOnClickListener { testSound() }
         binding.startButton.setOnClickListener { startWorkout() }
+        bindingValues = false
     }
 
     private fun bindRow(
@@ -158,9 +187,11 @@ class SetupActivity : AppCompatActivity() {
             }
         })
         row.paramMinus.setOnClickListener {
+            if (bindingValues) return@setOnClickListener
             row.paramValue.setText((readValue(row) - step).coerceAtLeast(min).toString())
         }
         row.paramPlus.setOnClickListener {
+            if (bindingValues) return@setOnClickListener
             row.paramValue.setText((readValue(row) + step).coerceAtMost(max).toString())
         }
     }
@@ -187,20 +218,17 @@ class SetupActivity : AppCompatActivity() {
             bindingValues = false
         }
         onChange(value)
-        markAsCustom()
+        if (config.mode != Mode.CUSTOM) {
+            config = config.copy(mode = Mode.CUSTOM)
+            bindingValues = true
+            binding.modeGroup.check(R.id.modeCustom)
+            bindingValues = false
+        }
         refreshSummary()
     }
 
     private fun readValue(row: RowParamBinding): Int =
         row.paramValue.text?.toString()?.trim()?.toIntOrNull() ?: 0
-
-    private fun markAsCustom() {
-        if (config.mode == Mode.CUSTOM) return
-        config = config.copy(mode = Mode.CUSTOM)
-        bindingValues = true
-        binding.modeGroup.check(R.id.modeCustom)
-        bindingValues = false
-    }
 
     private fun applyMode(mode: Mode) {
         config = when (mode) {
@@ -212,13 +240,13 @@ class SetupActivity : AppCompatActivity() {
                 rounds = 8,
                 cycles = 1,
                 restBetweenCyclesSeconds = 0,
-                announceHalfway = false,
+                announceHalfway = true,
             )
             Mode.EMOM -> WorkoutConfig(
                 mode = Mode.EMOM,
                 prepSeconds = 10,
-                workSeconds = 40,
-                restSeconds = 20,
+                workSeconds = 60,
+                restSeconds = 0,
                 rounds = 10,
                 cycles = 1,
                 restBetweenCyclesSeconds = 0,
@@ -227,7 +255,7 @@ class SetupActivity : AppCompatActivity() {
             Mode.AMRAP -> WorkoutConfig(
                 mode = Mode.AMRAP,
                 prepSeconds = 10,
-                workSeconds = 600,
+                workSeconds = 300,
                 restSeconds = 0,
                 rounds = 1,
                 cycles = 1,
@@ -276,15 +304,6 @@ class SetupActivity : AppCompatActivity() {
         }
     }
 
-    private fun applyOrientation(mode: OrientationMode) {
-        val target = when (mode) {
-            OrientationMode.AUTOMATIC -> ActivityInfo.SCREEN_ORIENTATION_FULL_USER
-            OrientationMode.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            OrientationMode.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        }
-        if (requestedOrientation != target) requestedOrientation = target
-    }
-
     private fun buttonForMode(mode: Mode): Int = when (mode) {
         Mode.TABATA -> R.id.modeTabata
         Mode.EMOM -> R.id.modeEmom
@@ -297,12 +316,6 @@ class SetupActivity : AppCompatActivity() {
         R.id.modeEmom -> Mode.EMOM
         R.id.modeAmrap -> Mode.AMRAP
         else -> Mode.CUSTOM
-    }
-
-    private fun orientationForButton(id: Int): OrientationMode = when (id) {
-        R.id.orientationPortrait -> OrientationMode.PORTRAIT
-        R.id.orientationLandscape -> OrientationMode.LANDSCAPE
-        else -> OrientationMode.AUTOMATIC
     }
 
     private fun formatSeconds(seconds: Int): String =

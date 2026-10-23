@@ -2,72 +2,74 @@
 <resources>
     <string name="app_name">FitFlow Timer</string>
 
-    <string name="mode_label">Modo de entrenamiento</string>
+    <string name="mode_label">Modalidad</string>
     <string name="mode_tabata">Tabata</string>
     <string name="mode_emom">EMOM</string>
     <string name="mode_amrap">AMRAP</string>
-    <string name="mode_custom">A medida</string>
+    <string name="mode_custom">Personalizado</string>
 
     <string name="params_label">Parámetros</string>
 
     <string name="param_prep">Preparación (s)</string>
     <string name="param_work">Trabajo (s)</string>
     <string name="param_rest">Descanso entre rondas (s)</string>
-    <string name="param_rounds">Número de rondas</string>
-    <string name="param_cycles">Número de ciclos</string>
+    <string name="param_rounds">Rondas</string>
+    <string name="param_cycles">Ciclos</string>
     <string name="param_rest_cycles">Descanso entre ciclos (s)</string>
 
     <string name="summary_total">Duración total: %1$s</string>
-    <string name="warning_no_cycle_rest">Aviso: has configurado varios ciclos sin descanso entre ellos.</string>
-    <string name="halfway_active">Aviso de mitad de ronda activo (EMOM)</string>
-    <string name="start_button">INICIAR ENTRENAMIENTO</string>
+    <string name="warning_no_cycle_rest">Varios ciclos sin descanso entre ellos</string>
+    <string name="halfway_active">Aviso a mitad de ronda activo</string>
+    <string name="start_button">EMPEZAR</string>
 
-    <string name="settings_title">Ajustes</string>
-    <string name="orientation_label">Orientación de la pantalla</string>
+    <string name="settings_title">Configuración</string>
+    <string name="tab_training">Entrenamiento</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="orientation_label">Orientación</string>
     <string name="orientation_auto">Automática</string>
     <string name="orientation_portrait">Vertical</string>
     <string name="orientation_landscape">Horizontal</string>
 
     <string name="sound_title">Sonido</string>
-    <string name="setting_sound">Sonido del temporizador</string>
-    <string name="setting_countdown_beeps">Pitido de cuenta atrás (últimos 5 s)</string>
-    <string name="setting_start_tone">Tono al empezar el trabajo</string>
-    <string name="sound_output_label">Salida del pitido</string>
-    <string name="output_media">Media (se mezcla con la música)</string>
-    <string name="output_system">Sistema (volumen independiente)</string>
-    <string name="volume_label">Volumen del pitido</string>
-    <string name="sound_test">Probar sonido</string>
+    <string name="setting_sound">Sonido activado</string>
+    <string name="setting_countdown_beeps">Cuenta atrás (últimos 5 s)</string>
+    <string name="setting_start_tone">Tono al iniciar fase de trabajo</string>
+    <string name="sound_output_label">Salida de audio</string>
+    <string name="output_media">Multimedia (se mezcla con música)</string>
+    <string name="output_system">Sistema</string>
+    <string name="volume_label">Volumen</string>
+    <string name="sound_test">Probar</string>
 
-    <string name="setting_keep_screen_on">Mantener la pantalla encendida</string>
-    <string name="setting_vibration">Vibración en los cambios de fase</string>
-    <string name="setting_voice">Asistente de voz</string>
-    <string name="voice_hint">Próximamente: avisos de inicio, fin y mitad de ronda.</string>
+    <string name="setting_keep_screen_on">Mantener pantalla encendida</string>
+    <string name="setting_vibration">Vibración al cambiar de fase</string>
+    <string name="setting_voice">Avisos por voz</string>
+    <string name="voice_hint">Avisos por voz próximamente</string>
 
     <string name="phase_preparation">PREPARACIÓN</string>
     <string name="phase_work">TRABAJO</string>
     <string name="phase_rest">DESCANSO</string>
     <string name="phase_cycle_rest">DESCANSO ENTRE CICLOS</string>
-    <string name="phase_finished">¡COMPLETADO!</string>
+    <string name="phase_finished">FINALIZADO</string>
 
     <string name="round_counter">Ciclo %1$d/%2$d · Ronda %3$d/%4$d</string>
-    <string name="next_label">Sigue: %1$s</string>
+    <string name="next_label">Siguiente: %1$s</string>
     <string name="log_title">Avisos</string>
 
     <string name="action_pause">Pausar</string>
     <string name="action_resume">Reanudar</string>
     <string name="action_skip">Saltar</string>
-    <string name="action_stop">Detener</string>
+    <string name="action_stop">Finalizar</string>
     <string name="action_rotate">Rotar</string>
 
-    <string name="notification_channel">Temporizador de entrenamiento</string>
-    <string name="notification_preparing">Preparando el entrenamiento…</string>
-    <string name="notification_done">¡Entrenamiento completado!</string>
+    <string name="notification_channel">Temporizador FitFlow</string>
+    <string name="notification_preparing">Preparando…</string>
+    <string name="notification_done">Entrenamiento finalizado</string>
 
-    <string name="voice_session_starting">Sesión iniciada: %1$s</string>
-    <string name="voice_work_started">Ronda %1$d, ciclo %2$d</string>
-    <string name="voice_half_time">Mitad de la ronda %1$d</string>
-    <string name="voice_work_finished">Fin de la ronda %1$d</string>
-    <string name="voice_rest_started">Descanso de %1$d segundos</string>
-    <string name="voice_cycle_finished">Fin del ciclo %1$d</string>
-    <string name="voice_session_finished">Entrenamiento completado</string>
+    <string name="voice_session_starting">Inicio en %1$s</string>
+    <string name="voice_work_started">Trabajo. Ronda %1$d, ciclo %2$d</string>
+    <string name="voice_half_time">Mitad de ronda %1$d</string>
+    <string name="voice_work_finished">Fin de ronda %1$d</string>
+    <string name="voice_rest_started">Descanso %1$d segundos</string>
+    <string name="voice_cycle_finished">Fin de ciclo %1$d</string>
+    <string name="voice_session_finished">Entrenamiento finalizado</string>
 </resources>

@@ -2,8 +2,11 @@ package com.fitflow.timer.ui
 
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -11,7 +14,6 @@ import com.fitflow.timer.R
 import com.fitflow.timer.core.PhaseType
 import com.fitflow.timer.data.AppSettings
 import com.fitflow.timer.data.ConfigStore
-import com.fitflow.timer.data.OrientationMode
 import com.fitflow.timer.databinding.ActivityWorkoutBinding
 import com.fitflow.timer.service.SessionBus
 import com.fitflow.timer.service.SessionSnapshot
@@ -29,8 +31,10 @@ class WorkoutActivity : AppCompatActivity() {
         binding = ActivityWorkoutBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        applySystemBars()
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
         settings = ConfigStore(this).loadSettings()
-        applyOrientation()
         binding.root.keepScreenOn = settings.keepScreenOn
 
         binding.pauseButton.setOnClickListener {
@@ -45,10 +49,23 @@ class WorkoutActivity : AppCompatActivity() {
         }
         binding.rotateButton.setOnClickListener { toggleOrientation() }
 
+        onBackPressedDispatcher.addCallback(this) {
+            TimerService.send(this, TimerService.ACTION_STOP)
+            finish()
+        }
+
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 SessionBus.snapshot.collect { render(it) }
             }
+        }
+    }
+
+    private fun applySystemBars() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
         }
     }
 
@@ -98,23 +115,11 @@ class WorkoutActivity : AppCompatActivity() {
     }
 
     private fun toggleOrientation() {
-        val next = if (settings.orientation == OrientationMode.LANDSCAPE) {
-            OrientationMode.PORTRAIT
+        requestedOrientation = if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         } else {
-            OrientationMode.LANDSCAPE
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
-        settings = settings.copy(orientation = next)
-        ConfigStore(this).saveSettings(settings)
-        applyOrientation()
-    }
-
-    private fun applyOrientation() {
-        val target = when (settings.orientation) {
-            OrientationMode.AUTOMATIC -> ActivityInfo.SCREEN_ORIENTATION_FULL_USER
-            OrientationMode.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            OrientationMode.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        }
-        if (requestedOrientation != target) requestedOrientation = target
     }
 
     private fun formatTime(milliseconds: Long): String {
