@@ -49,10 +49,12 @@ class WorkoutActivity : AppCompatActivity() {
         }
         binding.rotateButton.setOnClickListener { toggleOrientation() }
 
-        onBackPressedDispatcher.addCallback(this) {
-            TimerService.send(this, TimerService.ACTION_STOP)
-            finish()
-        }
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                TimerService.send(this@WorkoutActivity, TimerService.ACTION_STOP)
+                finish()
+            }
+        })
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {

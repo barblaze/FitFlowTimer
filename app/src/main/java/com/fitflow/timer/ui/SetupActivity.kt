@@ -60,9 +60,11 @@ class SetupActivity : AppCompatActivity() {
         setupSettings()
         refreshSummary()
 
-        onBackPressedDispatcher.addCallback(this) {
-            moveTaskToBack(true)
-        }
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                moveTaskToBack(true)
+            }
+        })
     }
 
     private fun applySystemBars() {
