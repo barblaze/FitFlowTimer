@@ -88,7 +88,7 @@
                 android:layout_gravity="center"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:paddingHorizontal="24dp">
+                android:paddingHorizontal="28dp">
 
                 <TextView
                     android:id="@+id/phaseLabel"
@@ -106,13 +106,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:autoSizeMaxTextSize="92sp"
-                    android:autoSizeMinTextSize="32sp"
-                    android:autoSizeStepGranularity="2sp"
+                    android:autoSizeMaxTextSize="88sp"
+                    android:autoSizeMinTextSize="28sp"
+                    android:autoSizeStepGranularity="1sp"
                     android:autoSizeTextType="uniform"
                     android:fontFamily="sans-serif-condensed"
+                    android:fontFeatureSettings="tnum"
                     android:gravity="center"
                     android:includeFontPadding="false"
+                    android:letterSpacing="-0.03"
                     android:maxLines="1"
                     android:text="00:00"
                     android:textColor="@color/text_primary"

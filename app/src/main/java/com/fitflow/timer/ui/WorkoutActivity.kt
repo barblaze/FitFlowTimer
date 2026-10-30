@@ -31,6 +31,10 @@ class WorkoutActivity : AppCompatActivity() {
     private var lastPhaseKey: String? = null
     private var lastRunning: Boolean? = null
     private var lastSecond: Long = -1L
+    private var lastTimeText: String? = null
+    private var lastCounterText: String? = null
+    private var lastNextText: String? = null
+    private var lastLogText: String? = null
     private var finishedAnimated = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,23 +101,36 @@ class WorkoutActivity : AppCompatActivity() {
             applyPhase(snapshot, color, finished)
         }
 
-        binding.phaseLabel.setTextColor(color)
-        binding.timeText.setTextColor(color)
-        binding.counterLabel.text = if (finished) {
+        val counter = if (finished) {
             getString(R.string.workout_finished_sub)
         } else {
             counterText(snapshot)
         }
-        binding.timeText.text = formatTime(snapshot.remainingMs)
+        if (counter != lastCounterText) {
+            lastCounterText = counter
+            binding.counterLabel.text = counter
+        }
+
+        val time = formatTime(snapshot.remainingMs)
+        if (time != lastTimeText) {
+            lastTimeText = time
+            binding.timeText.text = time
+        }
         binding.ringProgress.progress = snapshot.phaseProgress
 
         val showNext = !finished && snapshot.nextLabel.isNotBlank()
         binding.nextLabel.isVisible = showNext
-        binding.nextLabel.text = snapshot.nextLabel
+        if (snapshot.nextLabel != lastNextText) {
+            lastNextText = snapshot.nextLabel
+            binding.nextLabel.text = snapshot.nextLabel
+        }
 
         val lastLog = snapshot.log.lastOrNull().orEmpty()
         binding.logText.isVisible = lastLog.isNotBlank()
-        binding.logText.text = lastLog
+        if (lastLog != lastLogText) {
+            lastLogText = lastLog
+            binding.logText.text = lastLog
+        }
 
         if (lastRunning != snapshot.isRunning) {
             lastRunning = snapshot.isRunning

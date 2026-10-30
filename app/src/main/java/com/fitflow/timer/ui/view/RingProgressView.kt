@@ -10,6 +10,7 @@ import android.graphics.RectF
 import android.graphics.SweepGradient
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import androidx.core.content.ContextCompat
 import com.fitflow.timer.R
 import kotlin.math.abs
@@ -36,16 +37,35 @@ class RingProgressView @JvmOverloads constructor(
     }
     private val rect = RectF()
     private var animatedProgress = 0f
+    private var targetProgress = 0f
     private var currentColor = ContextCompat.getColor(context, R.color.brand)
     private var colorAnimator: ValueAnimator? = null
+    private var progressAnimator: ValueAnimator? = null
 
     var progress: Float
-        get() = animatedProgress
+        get() = targetProgress
         set(value) {
             val clamped = value.coerceIn(0f, 1f)
-            if (abs(clamped - animatedProgress) < 0.0005f) return
-            animatedProgress = clamped
-            invalidate()
+            if (abs(clamped - targetProgress) < 0.0005f) return
+            targetProgress = clamped
+
+            if (clamped < animatedProgress - 0.5f) {
+                progressAnimator?.cancel()
+                animatedProgress = clamped
+                invalidate()
+                return
+            }
+
+            progressAnimator?.cancel()
+            progressAnimator = ValueAnimator.ofFloat(animatedProgress, clamped).apply {
+                duration = 140L
+                interpolator = DecelerateInterpolator()
+                addUpdateListener {
+                    animatedProgress = it.animatedValue as Float
+                    invalidate()
+                }
+                start()
+            }
         }
 
     fun setPhaseColor(color: Int, animate: Boolean = true) {
@@ -110,6 +130,7 @@ class RingProgressView @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         colorAnimator?.cancel()
+        progressAnimator?.cancel()
         super.onDetachedFromWindow()
     }
 }
