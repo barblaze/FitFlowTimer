@@ -88,7 +88,7 @@
                 android:layout_gravity="center"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:paddingHorizontal="28dp">
+                android:paddingHorizontal="32dp">
 
                 <TextView
                     android:id="@+id/phaseLabel"
@@ -101,24 +101,11 @@
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
-                <TextView
+                <com.fitflow.timer.ui.view.TimeDisplayView
                     android:id="@+id/timeText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:autoSizeMaxTextSize="88sp"
-                    android:autoSizeMinTextSize="28sp"
-                    android:autoSizeStepGranularity="1sp"
-                    android:autoSizeTextType="uniform"
-                    android:fontFamily="sans-serif-condensed"
-                    android:fontFeatureSettings="tnum"
-                    android:gravity="center"
-                    android:includeFontPadding="false"
-                    android:letterSpacing="-0.03"
-                    android:maxLines="1"
-                    android:text="00:00"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    android:layout_marginTop="4dp" />
 
                 <TextView
                     android:id="@+id/counterLabel"

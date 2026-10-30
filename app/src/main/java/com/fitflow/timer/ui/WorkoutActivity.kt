@@ -114,7 +114,7 @@ class WorkoutActivity : AppCompatActivity() {
         val time = formatTime(snapshot.remainingMs)
         if (time != lastTimeText) {
             lastTimeText = time
-            binding.timeText.text = time
+            binding.timeText.setTime(time)
         }
         binding.ringProgress.progress = snapshot.phaseProgress
 
@@ -162,7 +162,7 @@ class WorkoutActivity : AppCompatActivity() {
             getString(phaseNameRes(snapshot.phaseType))
         }
         binding.phaseLabel.setTextColor(color)
-        binding.timeText.setTextColor(color)
+        binding.timeText.setTimeColor(color, animate = true)
         binding.ringProgress.setPhaseColor(color, animate = true)
         binding.backdrop.setPhaseColor(color, animate = true)
 
@@ -217,8 +217,8 @@ class WorkoutActivity : AppCompatActivity() {
         binding.timeText.scaleX = 1f
         binding.timeText.scaleY = 1f
         binding.timeText.animate()
-            .scaleX(1.06f)
-            .scaleY(1.06f)
+            .scaleX(1.02f)
+            .scaleY(1.02f)
             .setDuration(80L)
             .withEndAction {
                 binding.timeText.animate()
@@ -233,8 +233,8 @@ class WorkoutActivity : AppCompatActivity() {
     private fun playFinishAnimation() {
         binding.timeText.animate().cancel()
         binding.timeText.animate()
-            .scaleX(1.08f)
-            .scaleY(1.08f)
+            .scaleX(1.04f)
+            .scaleY(1.04f)
             .setDuration(160L)
             .withEndAction {
                 binding.timeText.animate()
