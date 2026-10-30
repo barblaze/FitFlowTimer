@@ -146,6 +146,16 @@ class SetupActivity : AppCompatActivity() {
 
     private fun setupModes() {
         bindingValues = true
+        val profileLabels = mapOf(
+            Mode.TABATA to R.string.profile_1,
+            Mode.EMOM to R.string.profile_2,
+            Mode.AMRAP to R.string.profile_3,
+            Mode.CUSTOM to R.string.profile_4,
+        )
+        modeCards.forEach { (mode, card) ->
+            card.modeTitle.setText(profileLabels.getValue(mode))
+            card.modeSubtitle.isVisible = false
+        }
         updateModeCards(animated = false)
         bindingValues = false
 

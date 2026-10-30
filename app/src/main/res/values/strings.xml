@@ -18,6 +18,10 @@
     <string name="mode_emom_sub">60s por ronda</string>
     <string name="mode_amrap_sub">Máximo en 5 min</string>
     <string name="mode_custom_sub">A tu medida</string>
+    <string name="profile_1">Perfil 1</string>
+    <string name="profile_2">Perfil 2</string>
+    <string name="profile_3">Perfil 3</string>
+    <string name="profile_4">Perfil 4</string>
 
     <string name="params_label">Parámetros</string>
     <string name="param_prep">Preparación</string>
