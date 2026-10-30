@@ -5,9 +5,15 @@
         <item name="colorOnPrimary">@color/background</item>
         <item name="colorSecondary">@color/brand</item>
         <item name="colorSurface">@color/surface</item>
+        <item name="colorSurfaceVariant">@color/surface_high</item>
         <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/outline</item>
         <item name="android:colorBackground">@color/background</item>
+        <item name="android:windowBackground">@drawable/bg_app</item>
         <item name="android:statusBarColor">@color/background</item>
         <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
     </style>
 </resources>

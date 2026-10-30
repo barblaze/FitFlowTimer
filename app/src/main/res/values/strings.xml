@@ -1,28 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">FitFlow Timer</string>
+    <string name="app_tagline">Entrena por intervalos</string>
+    <string name="app_badge">FITFLOW</string>
+
+    <string name="setup_title">Configura tu sesión</string>
+    <string name="setup_subtitle">Elige un modo y ajusta los tiempos a tu ritmo.</string>
+    <string name="section_modes">MODALIDAD</string>
+    <string name="section_params">PARÁMETROS</string>
 
     <string name="mode_label">Modalidad</string>
     <string name="mode_tabata">Tabata</string>
     <string name="mode_emom">EMOM</string>
     <string name="mode_amrap">AMRAP</string>
     <string name="mode_custom">Personalizado</string>
+    <string name="mode_tabata_sub">20s trabajo · 10s descanso</string>
+    <string name="mode_emom_sub">60s por ronda</string>
+    <string name="mode_amrap_sub">Máximo en 5 min</string>
+    <string name="mode_custom_sub">A tu medida</string>
 
     <string name="params_label">Parámetros</string>
-
-    <string name="param_prep">Preparación (s)</string>
-    <string name="param_work">Trabajo (s)</string>
-    <string name="param_rest">Descanso entre rondas (s)</string>
+    <string name="param_prep">Preparación</string>
+    <string name="param_work">Trabajo</string>
+    <string name="param_rest">Descanso entre rondas</string>
     <string name="param_rounds">Rondas</string>
     <string name="param_cycles">Ciclos</string>
-    <string name="param_rest_cycles">Descanso entre ciclos (s)</string>
+    <string name="param_rest_cycles">Descanso entre ciclos</string>
 
+    <string name="unit_seconds">segundos</string>
+    <string name="unit_rounds">rondas</string>
+    <string name="unit_cycles">ciclos</string>
+
+    <string name="summary_title">DURACIÓN TOTAL</string>
     <string name="summary_total">Duración total: %1$s</string>
+    <string name="summary_structure">%1$d rondas · %2$d ciclos · %3$s trabajo / %4$s descanso</string>
     <string name="warning_no_cycle_rest">Varios ciclos sin descanso entre ellos</string>
     <string name="halfway_active">Aviso a mitad de ronda activo</string>
-    <string name="start_button">EMPEZAR</string>
+    <string name="start_button">Empezar entrenamiento</string>
 
-    <string name="settings_title">Configuración</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_subtitle">Personaliza el sonido y el comportamiento de la app.</string>
+    <string name="section_sound">SONIDO</string>
+    <string name="section_display">PANTALLA Y AVISOS</string>
     <string name="tab_training">Entrenamiento</string>
     <string name="tab_settings">Ajustes</string>
     <string name="orientation_label">Orientación</string>
@@ -35,9 +54,11 @@
     <string name="setting_countdown_beeps">Cuenta atrás (últimos 5 s)</string>
     <string name="setting_start_tone">Tono al iniciar fase de trabajo</string>
     <string name="sound_output_label">Salida de audio</string>
-    <string name="output_media">Multimedia (se mezcla con música)</string>
+    <string name="output_media">Multimedia</string>
     <string name="output_system">Sistema</string>
+    <string name="sound_output_hint">Se mezcla con Spotify, YouTube y otras apps.</string>
     <string name="volume_label">Volumen</string>
+    <string name="volume_value">%1$d%%</string>
     <string name="sound_test">Probar</string>
 
     <string name="setting_keep_screen_on">Mantener pantalla encendida</string>
@@ -50,6 +71,7 @@
     <string name="phase_rest">DESCANSO</string>
     <string name="phase_cycle_rest">DESCANSO ENTRE CICLOS</string>
     <string name="phase_finished">FINALIZADO</string>
+    <string name="workout_finished_sub">¡Buen trabajo!</string>
 
     <string name="round_counter">Ciclo %1$d/%2$d · Ronda %3$d/%4$d</string>
     <string name="next_label">Siguiente: %1$s</string>
@@ -60,6 +82,9 @@
     <string name="action_skip">Saltar</string>
     <string name="action_stop">Finalizar</string>
     <string name="action_rotate">Rotar</string>
+
+    <string name="cd_decrease">Disminuir</string>
+    <string name="cd_increase">Aumentar</string>
 
     <string name="notification_channel">Temporizador FitFlow</string>
     <string name="notification_preparing">Preparando…</string>

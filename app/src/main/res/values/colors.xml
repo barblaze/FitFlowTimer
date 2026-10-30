@@ -1,14 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">#0E1116</color>
-    <color name="surface">#161B22</color>
+    <color name="background">#0B0F14</color>
+    <color name="background_alt">#0F1722</color>
+    <color name="surface">#121A24</color>
+    <color name="surface_high">#182331</color>
+    <color name="icon_surface">#1B2735</color>
     <color name="brand">#22C55E</color>
-    <color name="text_primary">#F3F4F6</color>
-    <color name="text_secondary">#9CA3AF</color>
-    <color name="phase_preparation">#F59E0B</color>
+    <color name="brand_light">#4ADE80</color>
+    <color name="brand_dark">#16A34A</color>
+    <color name="brand_surface">#15291E</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="text_muted">#64748B</color>
+    <color name="outline">#263445</color>
+    <color name="divider">#1E2A38</color>
+    <color name="track">#223041</color>
+    <color name="phase_preparation">#FBBF24</color>
     <color name="phase_work">#22C55E</color>
-    <color name="phase_rest">#3B82F6</color>
-    <color name="phase_cycle_rest">#A855F7</color>
-    <color name="track">#263140</color>
+    <color name="phase_rest">#38BDF8</color>
+    <color name="phase_cycle_rest">#A78BFA</color>
+    <color name="danger">#F87171</color>
+    <color name="danger_surface">#2A1518</color>
+    <color name="danger_outline">#5B2326</color>
     <color name="ic_launcher_background">#0E1116</color>
 </resources>
