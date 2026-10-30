@@ -51,7 +51,7 @@
 
     <string name="sound_title">Sonido</string>
     <string name="setting_sound">Sonido activado</string>
-    <string name="setting_countdown_beeps">Cuenta atrás (últimos 5 s)</string>
+    <string name="setting_countdown_beeps">Cuenta atrás (últimos 3 s)</string>
     <string name="setting_start_tone">Tono al iniciar fase de trabajo</string>
     <string name="sound_output_label">Salida de audio</string>
     <string name="output_media">Multimedia</string>

@@ -446,7 +446,7 @@ class SetupActivity : AppCompatActivity() {
                 rounds = 1,
                 cycles = 1,
                 restBetweenCyclesSeconds = 0,
-                announceHalfway = false,
+                announceHalfway = true,
             )
             Mode.CUSTOM -> config.copy(mode = Mode.CUSTOM)
         }
@@ -473,7 +473,7 @@ class SetupActivity : AppCompatActivity() {
             formatSeconds(config.restSeconds),
         )
         binding.warningText.isVisible = config.cycles > 1 && config.restBetweenCyclesSeconds == 0
-        binding.halfwayText.isVisible = config.announceHalfway
+        binding.halfwayText.isVisible = true
 
         if (lastSummary != null && lastSummary != total) {
             binding.totalText.animate().cancel()

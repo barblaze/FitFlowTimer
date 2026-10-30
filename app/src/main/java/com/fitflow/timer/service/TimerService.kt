@@ -136,7 +136,12 @@ class TimerService : Service() {
                 if (settings.soundEnabled && settings.countdownBeeps) beeps?.play(TONE_COUNTDOWN, 90)
             }
             is EngineEvent.HalfTime -> {
-                if (settings.soundEnabled) beeps?.play(TONE_HALF, 140)
+                if (settings.soundEnabled) {
+                    beeps?.playSequence(
+                        listOf(TONE_HALF_LOW to 110, TONE_HALF_HIGH to 160),
+                        gapMs = 45L,
+                    )
+                }
                 vibrate()
             }
             is EngineEvent.SegmentChanged -> {
@@ -393,7 +398,8 @@ class TimerService : Service() {
         private const val TONE_COUNTDOWN = 880.0
         private const val TONE_GO = 1318.0
         private const val TONE_CHANGE = 660.0
-        private const val TONE_HALF = 1046.0
+        private const val TONE_HALF_LOW = 987.77
+        private const val TONE_HALF_HIGH = 1318.51
         private const val TONE_END = 523.0
 
         fun start(context: Context, config: WorkoutConfig) {

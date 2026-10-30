@@ -137,13 +137,13 @@ class TimerEngine(
 
         val wholeSecond = Math.ceil(remaining / 1000.0).toInt()
         if (wholeSecond != lastWholeSecond) {
-            if (segment.type != PhaseType.WORK && wholeSecond in 1..5) {
+            if (wholeSecond in 1..3) {
                 events += EngineEvent.Countdown(wholeSecond)
             }
             lastWholeSecond = wholeSecond
         }
 
-        if (!halfwayFired && segment.type == PhaseType.WORK && config.announceHalfway) {
+        if (!halfwayFired && segment.type == PhaseType.WORK) {
             val halfMs = segment.durationSeconds * 1000L / 2
             if (remaining <= halfMs) {
                 halfwayFired = true

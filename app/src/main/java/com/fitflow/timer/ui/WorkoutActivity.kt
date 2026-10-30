@@ -149,7 +149,7 @@ class WorkoutActivity : AppCompatActivity() {
         val seconds = (snapshot.remainingMs / 1000).coerceAtLeast(0)
         if (seconds != lastSecond) {
             lastSecond = seconds
-            if (!finished && seconds in 1..5 && snapshot.phaseType != PhaseType.WORK) {
+            if (!finished && seconds in 1..3) {
                 pulseTime()
             }
         }
