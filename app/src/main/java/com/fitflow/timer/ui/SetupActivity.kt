@@ -8,12 +8,15 @@ import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
 import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -21,17 +24,19 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.fitflow.timer.R
 import com.fitflow.timer.audio.BeepPlayer
+import com.fitflow.timer.core.DurationFormat
 import com.fitflow.timer.core.Mode
 import com.fitflow.timer.core.WorkoutConfig
 import com.fitflow.timer.data.AppSettings
 import com.fitflow.timer.data.ConfigStore
 import com.fitflow.timer.data.SoundOutput
 import com.fitflow.timer.databinding.ActivitySetupBinding
+import com.fitflow.timer.databinding.DialogDurationBinding
 import com.fitflow.timer.databinding.RowParamBinding
 import com.fitflow.timer.databinding.RowSwitchBinding
 import com.fitflow.timer.service.TimerService
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
-import java.util.Locale
 import kotlin.math.roundToInt
 
 class SetupActivity : AppCompatActivity() {
@@ -228,34 +233,37 @@ class SetupActivity : AppCompatActivity() {
         bindRow(
             binding.rowPrep,
             getString(R.string.param_prep),
-            getString(R.string.unit_seconds),
+            getString(R.string.unit_min_sec),
             R.drawable.ic_hourglass,
             0,
             600,
             5,
             config.prepSeconds,
+            isDuration = true,
         ) { config = config.copy(prepSeconds = it) }
 
         bindRow(
             binding.rowWork,
             getString(R.string.param_work),
-            getString(R.string.unit_seconds),
+            getString(R.string.unit_min_sec),
             R.drawable.ic_flame,
             1,
             3600,
             5,
             config.workSeconds,
+            isDuration = true,
         ) { config = config.copy(workSeconds = it) }
 
         bindRow(
             binding.rowRest,
             getString(R.string.param_rest),
-            getString(R.string.unit_seconds),
+            getString(R.string.unit_min_sec),
             R.drawable.ic_moon,
             0,
             600,
             5,
             config.restSeconds,
+            isDuration = true,
         ) { config = config.copy(restSeconds = it) }
 
         bindRow(
@@ -267,6 +275,7 @@ class SetupActivity : AppCompatActivity() {
             99,
             1,
             config.rounds,
+            isDuration = false,
         ) { config = config.copy(rounds = it) }
 
         bindRow(
@@ -278,17 +287,19 @@ class SetupActivity : AppCompatActivity() {
             99,
             1,
             config.cycles,
+            isDuration = false,
         ) { config = config.copy(cycles = it) }
 
         bindRow(
             binding.rowRestCycles,
             getString(R.string.param_rest_cycles),
-            getString(R.string.unit_seconds),
+            getString(R.string.unit_min_sec),
             R.drawable.ic_moon,
             0,
             600,
             10,
             config.restBetweenCyclesSeconds,
+            isDuration = true,
         ) { config = config.copy(restBetweenCyclesSeconds = it) }
     }
 
@@ -367,28 +378,56 @@ class SetupActivity : AppCompatActivity() {
         max: Int,
         step: Int,
         current: Int,
+        isDuration: Boolean,
         onChange: (Int) -> Unit,
     ) {
         row.paramLabel.text = label
         row.paramUnit.text = unit
         row.paramIcon.setImageResource(iconRes)
-        row.paramValue.setText(current.toString())
-        row.paramValue.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
-            override fun afterTextChanged(s: Editable?) {
-                if (!bindingValues) commit(row, min, max, onChange)
+        setRowValue(row, current, isDuration)
+
+        if (isDuration) {
+            row.paramValue.apply {
+                isFocusable = false
+                isFocusableInTouchMode = false
+                isClickable = true
+                isLongClickable = false
+                isCursorVisible = false
+                setTextIsSelectable(false)
+                inputType = InputType.TYPE_NULL
+                contentDescription = getString(R.string.cd_edit_time, label)
+                setOnClickListener { view ->
+                    view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                    bounce(view)
+                    showDurationDialog(label, readValue(row, true), min, max) { value ->
+                        setRowValue(row, value, true)
+                        commitValue(value, onChange)
+                    }
+                }
             }
-        })
+        } else {
+            row.paramValue.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+                override fun afterTextChanged(s: Editable?) {
+                    if (!bindingValues) commit(row, min, max, onChange)
+                }
+            })
+        }
+
         row.paramMinus.setOnClickListener { view ->
             if (bindingValues) return@setOnClickListener
             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            row.paramValue.setText((readValue(row) - step).coerceAtLeast(min).toString())
+            val value = (readValue(row, isDuration) - step).coerceAtLeast(min)
+            setRowValue(row, value, isDuration)
+            if (isDuration) commitValue(value, onChange)
         }
         row.paramPlus.setOnClickListener { view ->
             if (bindingValues) return@setOnClickListener
             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            row.paramValue.setText((readValue(row) + step).coerceAtMost(max).toString())
+            val value = (readValue(row, isDuration) + step).coerceAtMost(max)
+            setRowValue(row, value, isDuration)
+            if (isDuration) commitValue(value, onChange)
         }
     }
 
@@ -407,14 +446,24 @@ class SetupActivity : AppCompatActivity() {
         }
     }
 
+    private fun setRowValue(row: RowParamBinding, value: Int, isDuration: Boolean) {
+        row.paramValue.setText(
+            if (isDuration) DurationFormat.formatMinSec(value) else value.toString()
+        )
+    }
+
     private fun commit(row: RowParamBinding, min: Int, max: Int, onChange: (Int) -> Unit) {
-        val raw = readValue(row)
+        val raw = readValue(row, false)
         val value = raw.coerceIn(min, max)
         if (value != raw) {
             bindingValues = true
-            row.paramValue.setText(value.toString())
+            setRowValue(row, value, false)
             bindingValues = false
         }
+        commitValue(value, onChange)
+    }
+
+    private fun commitValue(value: Int, onChange: (Int) -> Unit) {
         onChange(value)
         if (config.mode != Mode.CUSTOM) {
             config = config.copy(mode = Mode.CUSTOM)
@@ -423,8 +472,99 @@ class SetupActivity : AppCompatActivity() {
         refreshSummary()
     }
 
-    private fun readValue(row: RowParamBinding): Int =
-        row.paramValue.text?.toString()?.trim()?.toIntOrNull() ?: 0
+    private fun readValue(row: RowParamBinding, isDuration: Boolean): Int {
+        val text = row.paramValue.text?.toString()?.trim().orEmpty()
+        return if (isDuration) {
+            DurationFormat.parseMinSec(text) ?: 0
+        } else {
+            text.toIntOrNull() ?: 0
+        }
+    }
+
+    private fun showDurationDialog(
+        label: String,
+        initialSeconds: Int,
+        min: Int,
+        max: Int,
+        onValue: (Int) -> Unit,
+    ) {
+        val dialogBinding = DialogDurationBinding.inflate(layoutInflater)
+        val (initialMinutes, initialRemainder) = DurationFormat.split(initialSeconds)
+        dialogBinding.minutesInput.setText(initialMinutes.toString())
+        dialogBinding.secondsInput.setText(initialRemainder.toString().padStart(2, '0'))
+        dialogBinding.durationRange.text = getString(
+            R.string.duration_range,
+            DurationFormat.formatMinSec(min),
+            DurationFormat.formatMinSec(max),
+        )
+
+        fun updatePreview() {
+            val minutes = dialogBinding.minutesInput.text?.toString()?.toIntOrNull() ?: 0
+            val seconds = dialogBinding.secondsInput.text?.toString()?.toIntOrNull() ?: 0
+            dialogBinding.durationPreview.setTime(
+                DurationFormat.formatMinSec(DurationFormat.toSeconds(minutes, seconds))
+            )
+        }
+
+        dialogBinding.durationPreview.setTimeColor(
+            ContextCompat.getColor(this, R.color.brand),
+            animate = false,
+        )
+        updatePreview()
+
+        val watcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+            override fun afterTextChanged(s: Editable?) = updatePreview()
+        }
+        dialogBinding.minutesInput.addTextChangedListener(watcher)
+        dialogBinding.secondsInput.addTextChangedListener(watcher)
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(label)
+            .setView(dialogBinding.root)
+            .setNegativeButton(R.string.action_cancel, null)
+            .setPositiveButton(R.string.action_accept, null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val minutesText = dialogBinding.minutesInput.text?.toString()?.trim().orEmpty()
+                val secondsText = dialogBinding.secondsInput.text?.toString()?.trim().orEmpty()
+                val minutes = minutesText.toIntOrNull()
+                val seconds = secondsText.toIntOrNull()
+                var valid = true
+
+                if (minutesText.isNotEmpty() && minutes == null) {
+                    dialogBinding.minutesLayout.error = getString(R.string.duration_invalid)
+                    valid = false
+                } else {
+                    dialogBinding.minutesLayout.error = null
+                }
+                if (secondsText.isNotEmpty() && seconds == null) {
+                    dialogBinding.secondsLayout.error = getString(R.string.duration_invalid)
+                    valid = false
+                } else {
+                    dialogBinding.secondsLayout.error = null
+                }
+                if (!valid) return@setOnClickListener
+
+                val total = DurationFormat.toSeconds(minutes ?: 0, seconds ?: 0)
+                val clamped = total.coerceIn(min, max)
+                onValue(clamped)
+                dialog.dismiss()
+                if (clamped != total) {
+                    Toast.makeText(
+                        this@SetupActivity,
+                        getString(R.string.duration_adjusted, DurationFormat.formatMinSec(clamped)),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+            }
+        }
+
+        dialog.show()
+    }
 
     private fun applyMode(mode: Mode) {
         config = when (mode) {
@@ -461,26 +601,26 @@ class SetupActivity : AppCompatActivity() {
             Mode.CUSTOM -> config.copy(mode = Mode.CUSTOM)
         }
         bindingValues = true
-        binding.rowPrep.paramValue.setText(config.prepSeconds.toString())
-        binding.rowWork.paramValue.setText(config.workSeconds.toString())
-        binding.rowRest.paramValue.setText(config.restSeconds.toString())
-        binding.rowRounds.paramValue.setText(config.rounds.toString())
-        binding.rowCycles.paramValue.setText(config.cycles.toString())
-        binding.rowRestCycles.paramValue.setText(config.restBetweenCyclesSeconds.toString())
+        setRowValue(binding.rowPrep, config.prepSeconds, true)
+        setRowValue(binding.rowWork, config.workSeconds, true)
+        setRowValue(binding.rowRest, config.restSeconds, true)
+        setRowValue(binding.rowRounds, config.rounds, false)
+        setRowValue(binding.rowCycles, config.cycles, false)
+        setRowValue(binding.rowRestCycles, config.restBetweenCyclesSeconds, true)
         bindingValues = false
         updateModeCards(animated = true)
         refreshSummary()
     }
 
     private fun refreshSummary() {
-        val total = formatSeconds(config.totalSeconds())
+        val total = DurationFormat.formatMinSec(config.totalSeconds())
         binding.totalText.text = total
         binding.structureText.text = getString(
             R.string.summary_structure,
             config.rounds,
             config.cycles,
-            formatSeconds(config.workSeconds),
-            formatSeconds(config.restSeconds),
+            DurationFormat.formatMinSec(config.workSeconds),
+            DurationFormat.formatMinSec(config.restSeconds),
         )
         binding.warningText.isVisible = config.cycles > 1 && config.restBetweenCyclesSeconds == 0
         binding.halfwayText.isVisible = true
@@ -560,7 +700,4 @@ class SetupActivity : AppCompatActivity() {
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).roundToInt()
-
-    private fun formatSeconds(seconds: Int): String =
-        String.format(Locale.US, "%d:%02d", seconds / 60, seconds % 60)
 }

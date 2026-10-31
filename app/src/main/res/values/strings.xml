@@ -32,8 +32,16 @@
     <string name="param_rest_cycles">Descanso entre ciclos</string>
 
     <string name="unit_seconds">segundos</string>
+    <string name="unit_min_sec">min : seg</string>
     <string name="unit_rounds">rondas</string>
     <string name="unit_cycles">ciclos</string>
+
+    <string name="duration_minutes_label">MIN</string>
+    <string name="duration_seconds_label">SEG</string>
+    <string name="duration_range">Mín. %1$s · Máx. %2$s</string>
+    <string name="duration_invalid">Introduce un tiempo válido</string>
+    <string name="duration_adjusted">Ajustado a %1$s</string>
+    <string name="cd_edit_time">Editar %1$s</string>
 
     <string name="summary_title">DURACIÓN TOTAL</string>
     <string name="summary_total">Duración total: %1$s</string>
@@ -81,6 +89,8 @@
     <string name="next_label">Siguiente: %1$s</string>
     <string name="log_title">Avisos</string>
 
+    <string name="action_accept">Aceptar</string>
+    <string name="action_cancel">Cancelar</string>
     <string name="action_pause">Pausar</string>
     <string name="action_resume">Reanudar</string>
     <string name="action_skip">Saltar</string>
