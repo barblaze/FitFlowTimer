@@ -345,10 +345,7 @@ class SetupActivity : AppCompatActivity() {
         ) { settings = settings.copy(voiceEnabled = it) }
         binding.voiceHint.isVisible = true
 
-        try {
-            setupCoachVoices()
-        } catch (_: Exception) {
-        }
+        setupCoachVoices()
 
         binding.outputGroup.check(
             if (settings.soundOutput == SoundOutput.MEDIA) R.id.outputMedia else R.id.outputSystem
