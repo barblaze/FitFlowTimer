@@ -77,6 +77,11 @@
     <string name="setting_vibration">Vibración al cambiar de fase</string>
     <string name="setting_voice">Avisos por voz</string>
     <string name="voice_hint">Avisos por voz próximamente</string>
+    <string name="coach_voices_title">Voces del entrenador</string>
+    <string name="coach_style_title">Tipo de entrenador</string>
+    <string name="coach_style_trainer">Entrenador</string>
+    <string name="coach_style_flaite">Modo Flaite</string>
+    <string name="coach_style_normal">Normal</string>
 
     <string name="phase_preparation">PREPARACIÓN</string>
     <string name="phase_work">TRABAJO</string>
