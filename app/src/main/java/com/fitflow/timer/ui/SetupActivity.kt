@@ -395,10 +395,10 @@ class SetupActivity : AppCompatActivity() {
         coachStyleSpinner.setSelection(styleIndex)
         coachStyleContainer.visibility = if (settings.coachVoiceEnabled) View.VISIBLE else View.GONE
 
-        coachSwitch.switchTitle.text = getString(R.string.coach_voices_title)
+        coachSwitch.switchLabel.text = getString(R.string.coach_voices_title)
         coachSwitch.switchIcon.setImageResource(R.drawable.ic_voice)
-        coachSwitch.rootSwitch.isChecked = settings.coachVoiceEnabled
-        coachSwitch.rootSwitch.setOnCheckedChangeListener { _, isChecked ->
+        coachSwitch.switchValue.isChecked = settings.coachVoiceEnabled
+        coachSwitch.switchValue.setOnCheckedChangeListener { _, isChecked ->
             if (bindingValues) return@setOnCheckedChangeListener
             settings = settings.copy(coachVoiceEnabled = isChecked)
             coachStyleContainer.visibility = if (isChecked) View.VISIBLE else View.GONE
