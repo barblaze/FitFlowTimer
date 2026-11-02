@@ -20,19 +20,17 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.IntentCompat
 import com.fitflow.timer.R
 import com.fitflow.timer.audio.BeepPlayer
-import com.fitflow.timer.audio.CoachVoicePlayer
 import com.fitflow.timer.core.Announcer
 import com.fitflow.timer.core.Clock
 import com.fitflow.timer.core.EngineEvent
+import com.fitflow.timer.core.PhaseSegment
 import com.fitflow.timer.core.PhaseType
 import com.fitflow.timer.core.TimerEngine
 import com.fitflow.timer.core.VoiceEvent
 import com.fitflow.timer.core.WorkoutConfig
 import com.fitflow.timer.data.AppSettings
 import com.fitflow.timer.data.ConfigStore
-import com.fitflow.timer.data.SessionBus
-import com.fitflow.timer.data.SessionSnapshot
-import com.fitflow.timer.util.DurationFormat
+import com.fitflow.timer.ui.WorkoutActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -57,7 +55,6 @@ class TimerService : Service() {
     private var job: Job? = null
     private var engine: TimerEngine? = null
     private var beeps: BeepPlayer? = null
-    private var coachVoicePlayer: CoachVoicePlayer? = null
     private var settings: AppSettings = AppSettings()
     private var wakeLock: PowerManager.WakeLock? = null
 
@@ -97,11 +94,6 @@ class TimerService : Service() {
         job?.cancel()
         job = null
         releaseWakeLock()
-        try {
-            coachVoicePlayer?.release()
-        } catch (_: Exception) {
-        }
-        coachVoicePlayer = null
         scope.cancel()
         super.onDestroy()
     }
@@ -111,24 +103,12 @@ class TimerService : Service() {
         job = null
         engine?.stop()
         releaseWakeLock()
-        try {
-            coachVoicePlayer?.release()
-        } catch (_: Exception) {
-        }
-        coachVoicePlayer = null
         logLines.clear()
 
         settings = ConfigStore(this).loadSettings()
         val player = BeepPlayer(settings.soundOutput)
         player.volume = settings.volume
         beeps = player
-        try {
-            if (settings.coachVoiceEnabled) {
-                coachVoicePlayer = CoachVoicePlayer(this, settings.coachStyle)
-            }
-        } catch (_: Exception) {
-            coachVoicePlayer = null
-        }
 
         createChannel()
         startForegroundCompat(buildNotification(getString(R.string.notification_preparing)))
@@ -190,12 +170,6 @@ class TimerService : Service() {
     }
 
     private fun onVoiceEvent(event: VoiceEvent) {
-        if (settings.coachVoiceEnabled) {
-            try {
-                coachVoicePlayer?.play(event)
-            } catch (_: Exception) {
-            }
-        }
         val line = when (event) {
             is VoiceEvent.SessionStarting ->
                 getString(R.string.voice_session_starting, formatSeconds(event.totalSeconds))
