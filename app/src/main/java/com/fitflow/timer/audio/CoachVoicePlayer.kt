@@ -39,22 +39,15 @@ class CoachVoicePlayer(
                     .build()
                 setAudioAttributes(attrs)
                 setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                afd.close()
                 prepare()
                 setOnCompletionListener { mp ->
-                    try {
-                        afd.close()
-                    } catch (_: Exception) {
-                    }
                     mp.release()
                     if (mediaPlayer == mp) {
                         mediaPlayer = null
                     }
                 }
                 setOnErrorListener { mp, _, _ ->
-                    try {
-                        afd.close()
-                    } catch (_: Exception) {
-                    }
                     mp.release()
                     if (mediaPlayer == mp) {
                         mediaPlayer = null
