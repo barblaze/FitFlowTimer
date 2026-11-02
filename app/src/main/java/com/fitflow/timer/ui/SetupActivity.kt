@@ -407,16 +407,17 @@ class SetupActivity : AppCompatActivity() {
         coachStyleSpinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if (bindingValues) return
-                settings = when (position) {
-                    0 -> settings.copy(coachStyle = CoachStyle.TRAINER)
-                    1 -> settings.copy(coachStyle = CoachStyle.FLAITE)
-                    2 -> settings.copy(coachStyle = CoachStyle.NORMAL)
-                    else -> settings.copy(coachStyle = CoachStyle.TRAINER)
-                }
+                settings = settings.copy(
+                    coachStyle = when (position) {
+                        0 -> CoachStyle.TRAINER
+                        1 -> CoachStyle.FLAITE
+                        2 -> CoachStyle.NORMAL
+                        else -> CoachStyle.TRAINER
+                    }
+                )
             }
 
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {
-            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) = Unit
         }
     }
 
