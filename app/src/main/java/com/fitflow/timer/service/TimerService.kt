@@ -20,6 +20,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.IntentCompat
 import com.fitflow.timer.R
 import com.fitflow.timer.audio.BeepPlayer
+import com.fitflow.timer.audio.CoachVoicePlayer
 import com.fitflow.timer.core.Announcer
 import com.fitflow.timer.core.Clock
 import com.fitflow.timer.core.EngineEvent
@@ -55,6 +56,7 @@ class TimerService : Service() {
     private var job: Job? = null
     private var engine: TimerEngine? = null
     private var beeps: BeepPlayer? = null
+    private var coachVoice: CoachVoicePlayer? = null
     private var settings: AppSettings = AppSettings()
     private var wakeLock: PowerManager.WakeLock? = null
 
@@ -94,6 +96,8 @@ class TimerService : Service() {
         job?.cancel()
         job = null
         releaseWakeLock()
+        try { coachVoice?.release() } catch (_: Exception) {}
+        coachVoice = null
         scope.cancel()
         super.onDestroy()
     }
@@ -103,12 +107,17 @@ class TimerService : Service() {
         job = null
         engine?.stop()
         releaseWakeLock()
+        try { coachVoice?.release() } catch (_: Exception) {}
+        coachVoice = null
         logLines.clear()
 
         settings = ConfigStore(this).loadSettings()
         val player = BeepPlayer(settings.soundOutput)
         player.volume = settings.volume
         beeps = player
+        if (settings.voiceEnabled) {
+            try { coachVoice = CoachVoicePlayer(this, settings.coachStyle) } catch (_: Exception) {}
+        }
 
         createChannel()
         startForegroundCompat(buildNotification(getString(R.string.notification_preparing)))
@@ -170,6 +179,9 @@ class TimerService : Service() {
     }
 
     private fun onVoiceEvent(event: VoiceEvent) {
+        if (settings.voiceEnabled) {
+            try { coachVoice?.play(event) } catch (_: Exception) {}
+        }
         val line = when (event) {
             is VoiceEvent.SessionStarting ->
                 getString(R.string.voice_session_starting, formatSeconds(event.totalSeconds))
