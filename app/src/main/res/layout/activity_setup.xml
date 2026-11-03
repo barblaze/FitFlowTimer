@@ -652,6 +652,32 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:text="@string/coach_volume_label"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                            <com.google.android.material.slider.Slider
+                                android:id="@+id/coachVolumeSlider"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:valueFrom="0.0"
+                                android:valueTo="1.0"
+                                android:stepSize="0.05" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/testCoachVoiceButton"
+                                style="@style/Widget.Material3.Button.OutlinedButton"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/coach_test_button"
+                                android:textAllCaps="false"
+                                android:textColor="@color/text_primary" />
                         </LinearLayout>
 
                         <TextView

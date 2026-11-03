@@ -116,7 +116,11 @@ class TimerService : Service() {
         player.volume = settings.volume
         beeps = player
         if (settings.voiceEnabled) {
-            try { coachVoice = CoachVoicePlayer(this, settings.coachStyle) } catch (_: Exception) {}
+            try {
+                val cv = CoachVoicePlayer(this, settings.coachStyle)
+                cv.volume = settings.coachVoiceVolume
+                coachVoice = cv
+            } catch (_: Exception) {}
         }
 
         createChannel()

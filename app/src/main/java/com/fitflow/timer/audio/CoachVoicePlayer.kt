@@ -10,16 +10,24 @@ import com.fitflow.timer.data.CoachStyle
 class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) {
     private var mp: MediaPlayer? = null
     private var afd: AssetFileDescriptor? = null
+    var volume: Float = 0.8f
 
     fun play(event: VoiceEvent) {
         val name = when (event) {
             is VoiceEvent.SessionStarting -> "session_starting.ogg"
             is VoiceEvent.WorkStarted -> "work_started.ogg"
+            is VoiceEvent.HalfTime -> "halftime.ogg"
             is VoiceEvent.RestStarted -> "rest_started.ogg"
+            is VoiceEvent.CycleFinished -> "cycle_finished.ogg"
             is VoiceEvent.SessionFinished -> "session_finished.ogg"
             else -> return
         }
         playPath("coach/${style.folder}/$name")
+    }
+
+    fun playAssetName(assetName: String) {
+        if (!assetName.endsWith(".ogg")) return
+        playPath("coach/${style.folder}/$assetName")
     }
 
     private fun playPath(path: String) {
@@ -35,6 +43,8 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
             m.setAudioAttributes(attrs)
             m.setDataSource(d.fileDescriptor, d.startOffset, d.length)
             m.prepare()
+            val v = volume.coerceIn(0f, 1f)
+            try { m.setVolume(v, v) } catch (_: Exception) {}
             m.setOnCompletionListener {
                 close()
                 try { it.release() } catch (_: Exception) {}

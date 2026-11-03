@@ -14,14 +14,17 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.fitflow.timer.R
 import com.fitflow.timer.core.PhaseType
-import com.fitflow.timer.data.AppSettings
+import com.fitflow.timer.data.CoachStyle
 import com.fitflow.timer.data.ConfigStore
+import com.fitflow.timer.data.SessionBus
+import com.fitflow.timer.data.SessionSnapshot
 import com.fitflow.timer.databinding.ActivityWorkoutBinding
-import com.fitflow.timer.service.SessionBus
-import com.fitflow.timer.service.SessionSnapshot
 import com.fitflow.timer.service.TimerService
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.Locale
 import kotlin.math.roundToInt
 
 class WorkoutActivity : AppCompatActivity() {
@@ -63,6 +66,7 @@ class WorkoutActivity : AppCompatActivity() {
             finish()
         }
         binding.rotateButton.setOnClickListener { toggleOrientation() }
+        setupCoachIndicator()
 
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -228,6 +232,21 @@ class WorkoutActivity : AppCompatActivity() {
                     .start()
             }
             .start()
+    }
+
+    private fun setupCoachIndicator() {
+        val s = ConfigStore(this).loadSettings()
+        val v = binding.coachIndicator
+        if (!s.voiceEnabled) {
+            v.visibility = android.view.View.GONE
+            return
+        }
+        v.text = when (s.coachStyle) {
+            CoachStyle.TRAINER -> getString(R.string.coach_indicator_trainer)
+            CoachStyle.FLAITE -> getString(R.string.coach_indicator_flaite)
+            CoachStyle.NORMAL -> getString(R.string.coach_indicator_normal)
+        }
+        v.visibility = android.view.View.VISIBLE
     }
 
     private fun playFinishAnimation() {

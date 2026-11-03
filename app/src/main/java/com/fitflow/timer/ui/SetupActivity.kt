@@ -25,8 +25,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.fitflow.timer.R
 import com.fitflow.timer.audio.BeepPlayer
+import com.fitflow.timer.audio.CoachVoicePlayer
 import com.fitflow.timer.core.DurationFormat
 import com.fitflow.timer.core.Mode
+import com.fitflow.timer.core.VoiceEvent
 import com.fitflow.timer.core.WorkoutConfig
 import com.fitflow.timer.data.AppSettings
 import com.fitflow.timer.data.CoachStyle
@@ -375,6 +377,8 @@ class SetupActivity : AppCompatActivity() {
     private fun setupCoachSelector() {
         val block = binding.coachStyleBlock
         val spinner = binding.coachStyleSpinner
+        val slider = binding.coachVolumeSlider
+        val testBtn = binding.testCoachVoiceButton
         val labels = listOf(
             getString(R.string.coach_style_trainer),
             getString(R.string.coach_style_flaite),
@@ -389,6 +393,7 @@ class SetupActivity : AppCompatActivity() {
             CoachStyle.NORMAL -> 2
         }
         spinner.setSelection(idx)
+        slider.value = settings.coachVoiceVolume.coerceIn(0f, 1f)
         block.visibility = if (settings.voiceEnabled) View.VISIBLE else View.GONE
         binding.rowVoice.switchValue.setOnCheckedChangeListener { _, isChecked ->
             if (bindingValues) return@setOnCheckedChangeListener
@@ -407,6 +412,24 @@ class SetupActivity : AppCompatActivity() {
             }
             override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
+        slider.addOnChangeListener { _, value, fromUser ->
+            if (bindingValues || !fromUser) return@addOnChangeListener
+            settings = settings.copy(coachVoiceVolume = value.coerceIn(0f, 1f))
+        }
+        testBtn.setOnClickListener { testCoachVoice() }
+    }
+
+    private fun testCoachVoice() {
+        val style = when (binding.coachStyleSpinner.selectedItemPosition) {
+            0 -> CoachStyle.TRAINER
+            1 -> CoachStyle.FLAITE
+            2 -> CoachStyle.NORMAL
+            else -> CoachStyle.TRAINER
+        }
+        val player = CoachVoicePlayer(this, style)
+        player.volume = settings.coachVoiceVolume.coerceIn(0f, 1f)
+        player.play(VoiceEvent.WorkStarted(1, 1))
+        binding.coachStyleBlock.postDelayed({ try { player.release() } catch (_: Exception) {} }, 4000)
     }
 
     private fun bindRow(
