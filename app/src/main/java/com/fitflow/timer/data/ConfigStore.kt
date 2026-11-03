@@ -20,6 +20,8 @@ data class AppSettings(
     val keepScreenOn: Boolean = true,
     val vibration: Boolean = true,
     val voiceEnabled: Boolean = false,
+    val coachVoiceEnabled: Boolean = false,
+    val coachStyle: CoachStyle = CoachStyle.TRAINER,
 )
 
 class ConfigStore(context: Context) {
@@ -71,6 +73,8 @@ class ConfigStore(context: Context) {
             put("keepScreenOn", settings.keepScreenOn)
             put("vibration", settings.vibration)
             put("voiceEnabled", settings.voiceEnabled)
+            put("coachVoiceEnabled", settings.coachVoiceEnabled)
+            put("coachStyle", settings.coachStyle.name)
         }
         prefs.edit().putString(KEY_SETTINGS, json.toString()).apply()
     }
@@ -89,6 +93,8 @@ class ConfigStore(context: Context) {
                 keepScreenOn = json.optBoolean("keepScreenOn", true),
                 vibration = json.optBoolean("vibration", true),
                 voiceEnabled = json.optBoolean("voiceEnabled", false),
+                coachVoiceEnabled = json.optBoolean("coachVoiceEnabled", false),
+                coachStyle = enumValueOrDefault(json.optString("coachStyle"), CoachStyle.TRAINER),
             )
         } catch (error: Exception) {
             AppSettings()
