@@ -630,6 +630,30 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
+                        <LinearLayout
+                            android:id="@+id/coachStyleBlock"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingStart="44dp"
+                            android:paddingEnd="12dp"
+                            android:paddingBottom="12dp"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/coach_style_title"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp" />
+
+                            <Spinner
+                                android:id="@+id/coachStyleSpinner"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp" />
+                        </LinearLayout>
+
                         <TextView
                             android:id="@+id/voiceHint"
                             android:layout_width="match_parent"

@@ -13,6 +13,7 @@ import android.text.TextWatcher
 import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,6 +29,7 @@ import com.fitflow.timer.core.DurationFormat
 import com.fitflow.timer.core.Mode
 import com.fitflow.timer.core.WorkoutConfig
 import com.fitflow.timer.data.AppSettings
+import com.fitflow.timer.data.CoachStyle
 import com.fitflow.timer.data.ConfigStore
 import com.fitflow.timer.data.SoundOutput
 import com.fitflow.timer.databinding.ActivitySetupBinding
@@ -341,6 +343,7 @@ class SetupActivity : AppCompatActivity() {
             R.drawable.ic_voice,
             settings.voiceEnabled,
         ) { settings = settings.copy(voiceEnabled = it) }
+        setupCoachSelector()
         binding.voiceHint.isVisible = true
 
         binding.outputGroup.check(
@@ -367,6 +370,43 @@ class SetupActivity : AppCompatActivity() {
         binding.testSoundButton.setOnClickListener { testSound() }
         binding.startButton.setOnClickListener { startWorkout() }
         bindingValues = false
+    }
+
+    private fun setupCoachSelector() {
+        val block = binding.coachStyleBlock
+        val spinner = binding.coachStyleSpinner
+        val labels = listOf(
+            getString(R.string.coach_style_trainer),
+            getString(R.string.coach_style_flaite),
+            getString(R.string.coach_style_normal),
+        )
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
+        val idx = when (settings.coachStyle) {
+            CoachStyle.TRAINER -> 0
+            CoachStyle.FLAITE -> 1
+            CoachStyle.NORMAL -> 2
+        }
+        spinner.setSelection(idx)
+        block.visibility = if (settings.voiceEnabled) View.VISIBLE else View.GONE
+        binding.rowVoice.switchValue.setOnCheckedChangeListener { _, isChecked ->
+            if (bindingValues) return@setOnCheckedChangeListener
+            settings = settings.copy(voiceEnabled = isChecked)
+            block.visibility = if (isChecked) View.VISIBLE else View.GONE
+        }
+        spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (bindingValues) return
+                settings = when (position) {
+                    0 -> settings.copy(coachStyle = CoachStyle.TRAINER)
+                    1 -> settings.copy(coachStyle = CoachStyle.FLAITE)
+                    2 -> settings.copy(coachStyle = CoachStyle.NORMAL)
+                    else -> settings.copy(coachStyle = CoachStyle.TRAINER)
+                }
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
     }
 
     private fun bindRow(
