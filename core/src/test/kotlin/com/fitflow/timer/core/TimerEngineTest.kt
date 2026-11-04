@@ -206,6 +206,68 @@ class TimerEngineTest {
     }
 
     @Test
+    fun `session starting is announced once when preparation begins`() {
+        val clock = FakeClock()
+        val events = mutableListOf<VoiceEvent>()
+        val engine = TimerEngine(
+            WorkoutConfig(prepSeconds = 10, workSeconds = 20, restSeconds = 10, rounds = 2, cycles = 1),
+            clock,
+            Announcer { events += it },
+        )
+
+        engine.start()
+        assertEquals(1, events.count { it is VoiceEvent.SessionStarting })
+        assertTrue(events.none { it is VoiceEvent.WorkStarted })
+
+        clock.advance(10_000)
+        engine.tick()
+        assertEquals(1, events.count { it is VoiceEvent.SessionStarting })
+        assertTrue(events.any { it is VoiceEvent.WorkStarted })
+    }
+
+    @Test
+    fun `rest started is announced when the rest begins`() {
+        val clock = FakeClock()
+        val events = mutableListOf<VoiceEvent>()
+        val engine = TimerEngine(
+            WorkoutConfig(prepSeconds = 0, workSeconds = 10, restSeconds = 10, rounds = 2, cycles = 1),
+            clock,
+            Announcer { events += it },
+        )
+        engine.start()
+        events.clear()
+
+        clock.advance(9_000)
+        engine.tick()
+        assertTrue(events.none { it is VoiceEvent.RestStarted })
+
+        clock.advance(1_000)
+        engine.tick()
+        assertTrue(events.any { it is VoiceEvent.RestStarted })
+    }
+
+    @Test
+    fun `work started is announced once per round`() {
+        val clock = FakeClock()
+        val events = mutableListOf<VoiceEvent>()
+        val engine = TimerEngine(
+            WorkoutConfig(prepSeconds = 0, workSeconds = 10, restSeconds = 10, rounds = 2, cycles = 1),
+            clock,
+            Announcer { events += it },
+        )
+        engine.start()
+        assertEquals(1, events.count { it is VoiceEvent.WorkStarted })
+
+        clock.advance(10_000)
+        engine.tick()
+        clock.advance(10_000)
+        engine.tick()
+
+        assertEquals(2, events.count { it is VoiceEvent.WorkStarted })
+        assertEquals(1, events.count { it is VoiceEvent.RestStarted })
+    }
+
+    @Test
     fun `skip jumps to the next phase`() {
         val clock = FakeClock()
         val engine = TimerEngine(

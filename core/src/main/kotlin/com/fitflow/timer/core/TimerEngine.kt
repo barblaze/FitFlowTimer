@@ -44,10 +44,6 @@ class TimerEngine(
 
     val currentSegment: PhaseSegment? get() = segments.getOrNull(index)
 
-    private var prepStartAnnounced = false
-    private var transitionAnnouncedForIndex = -1
-    private var sessionStartAnnouncedOnPrepEnd = false
-
     fun start() {
         if (segments.isEmpty()) {
             isFinished = true
@@ -59,13 +55,11 @@ class TimerEngine(
         isRunning = true
         lastWholeSecond = -1
         halfwayFired = false
-        prepStartAnnounced = false
-        transitionAnnouncedForIndex = -1
-        sessionStartAnnouncedOnPrepEnd = false
         segmentEndMs = clock.nowMs() + segments[0].durationSeconds * 1000L
         val first = segments[0]
         if (first.type == PhaseType.PREPARATION) {
-            // announced at end of preparation
+            // El aviso de inicio suena cuando arranca la cuenta regresiva.
+            announcer.announce(VoiceEvent.SessionStarting((totalMs / 1000L).toInt()))
         } else {
             when (first.type) {
                 PhaseType.WORK -> announcer.announce(VoiceEvent.WorkStarted(first.round, first.cycle))
@@ -143,16 +137,6 @@ class TimerEngine(
                 events += EngineEvent.Finished
                 return events
             }
-            // Pre-announce transition in last 3 seconds of current phase
-            val nextSeg = segments[index + 1]
-            if (transitionAnnouncedForIndex != index) {
-                when (nextSeg.type) {
-                    PhaseType.WORK -> announcer.announce(VoiceEvent.WorkStarted(nextSeg.round, nextSeg.cycle))
-                    PhaseType.REST, PhaseType.REST_BETWEEN_CYCLES -> announcer.announce(VoiceEvent.RestStarted(nextSeg.durationSeconds))
-                    PhaseType.PREPARATION -> Unit
-                }
-                transitionAnnouncedForIndex = index
-            }
             moveTo(index + 1, fromNow = false)
             events += EngineEvent.SegmentChanged(index, segments[index])
         }
@@ -164,17 +148,6 @@ class TimerEngine(
         if (wholeSecond != lastWholeSecond) {
             if (wholeSecond in 1..3) {
                 events += EngineEvent.Countdown(wholeSecond)
-                if (transitionAnnouncedForIndex != index) {
-                    val nextSeg = segments.getOrNull(index + 1)
-                    if (nextSeg != null && nextSeg.type != PhaseType.PREPARATION) {
-                        when (nextSeg.type) {
-                            PhaseType.WORK -> announcer.announce(VoiceEvent.WorkStarted(nextSeg.round, nextSeg.cycle))
-                            PhaseType.REST, PhaseType.REST_BETWEEN_CYCLES -> announcer.announce(VoiceEvent.RestStarted(nextSeg.durationSeconds))
-                            PhaseType.PREPARATION -> Unit
-                        }
-                        transitionAnnouncedForIndex = index
-                    }
-                }
             }
             lastWholeSecond = wholeSecond
         }
@@ -202,15 +175,16 @@ class TimerEngine(
         }
         lastWholeSecond = -1
         halfwayFired = false
-        transitionAnnouncedForIndex = -1
-
-        if (previous != null && previous.type == PhaseType.PREPARATION && !sessionStartAnnouncedOnPrepEnd) {
-            sessionStartAnnouncedOnPrepEnd = true
-            announcer.announce(VoiceEvent.SessionStarting((totalMs / 1000L).toInt()))
-        }
 
         if (previous != null && segment.type == PhaseType.WORK && segment.cycle > previous.cycle) {
             announcer.announce(VoiceEvent.CycleFinished(previous.cycle))
+        }
+
+        // El aviso de cada fase suena cuando la fase empieza de verdad.
+        when (segment.type) {
+            PhaseType.WORK -> announcer.announce(VoiceEvent.WorkStarted(segment.round, segment.cycle))
+            PhaseType.REST, PhaseType.REST_BETWEEN_CYCLES -> announcer.announce(VoiceEvent.RestStarted(segment.durationSeconds))
+            PhaseType.PREPARATION -> Unit
         }
     }
 
@@ -218,12 +192,5 @@ class TimerEngine(
         isRunning = false
         isFinished = true
         announcer.announce(VoiceEvent.SessionFinished((totalMs / 1000L).toInt()))
-    }
-
-    private fun announceSegmentStart(segment: PhaseSegment) {
-        when (segment.type) {
-            PhaseType.PREPARATION -> Unit
-            else -> Unit
-        }
     }
 }

@@ -17,11 +17,27 @@ firma automaticamente en **GitHub Actions** (workflow `.github/workflows/build-a
 - **Rotacion a horizontal** opcional (ajuste de orientacion y boton en pantalla).
 - El temporizador sigue funcionando **con la pantalla apagada** (servicio en primer plano
   + wakelock) y se calcula con `SystemClock.elapsedRealtime()`, por lo que no acumula deriva.
-- Capa de **asistente de voz preparada**: el motor emite los eventos
-  (`WorkStarted`, `HalfTime`, `WorkFinished`, `RestStarted`, `CycleFinished`,
-  `SessionFinished`) a traves de la interfaz `Announcer`. En esta version se muestran
-  en el panel "Avisos"; conectar un motor TTS es crear una clase `TtsAnnouncer` y
-  registrarla en el servicio.
+- **Avisos de voz del entrenador**: cada evento reproduce su propio archivo `.ogg`
+  desde `app/src/main/assets/coach/<estilo>/`. Si el archivo no existe, el evento
+  queda en silencio (nunca se reutiliza otro audio).
+
+## Voces del entrenador
+
+Los audios se guardan en `app/src/main/assets/coach/<estilo>/`, donde `<estilo>` es
+`entrenador`, `flaite` o `normal`. Los nombres deben ser exactamente:
+
+| Evento | Archivo |
+| --- | --- |
+| Inicio de la cuenta regresiva | `session_starting.ogg` |
+| Inicio de trabajo | `work_started.ogg` |
+| Mitad de ronda | `halftime.ogg` |
+| Fin de trabajo | `work_finished.ogg` |
+| Inicio de descanso | `rest_started.ogg` |
+| Fin de ciclo | `cycle_finished.ogg` |
+| Fin de sesion | `session_finished.ogg` (o `session_finish.ogg`) |
+
+Si un archivo falta, ese aviso simplemente no suena. Los avisos que coinciden en el
+tiempo se reproducen en orden, sin cortarse entre si.
 
 ## Estructura
 

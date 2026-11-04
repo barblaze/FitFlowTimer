@@ -6,80 +6,92 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import com.fitflow.timer.core.VoiceEvent
 import com.fitflow.timer.data.CoachStyle
+import java.util.ArrayDeque
 
+/**
+ * Reproduce los avisos de voz del entrenador.
+ *
+ * Cada evento busca su archivo exacto (por ejemplo session_starting.ogg). Si el
+ * archivo no existe, el evento se ignora: nunca se reutiliza otro audio como
+ * relleno. Los avisos que coinciden en el tiempo se encolan para no cortarse.
+ */
 class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) {
+
+    private data class Clip(val folder: String, val fileName: String)
+
+    private val queue = ArrayDeque<Clip>()
     private var mp: MediaPlayer? = null
     private var afd: AssetFileDescriptor? = null
+    private var currentClip: Clip? = null
+
     var volume: Float = 0.8f
 
+    @Synchronized
     fun play(event: VoiceEvent) {
-        val name = when (event) {
-            is VoiceEvent.SessionStarting -> "session_starting.ogg"
-            is VoiceEvent.WorkStarted -> "work_started.ogg"
-            is VoiceEvent.HalfTime -> "halftime.ogg"
-            is VoiceEvent.RestStarted -> "rest_started.ogg"
-            is VoiceEvent.CycleFinished -> "cycle_finished.ogg"
-            is VoiceEvent.SessionFinished -> "session_finished.ogg"
-            else -> return
+        val candidates = when (event) {
+            is VoiceEvent.SessionStarting -> listOf("session_starting.ogg")
+            is VoiceEvent.WorkStarted -> listOf("work_started.ogg")
+            is VoiceEvent.HalfTime -> listOf("halftime.ogg", "half_time.ogg")
+            is VoiceEvent.WorkFinished -> listOf("work_finished.ogg", "round_finished.ogg")
+            is VoiceEvent.RestStarted -> listOf("rest_started.ogg")
+            is VoiceEvent.CycleFinished -> listOf("cycle_finished.ogg")
+            is VoiceEvent.SessionFinished -> listOf("session_finished.ogg", "session_finish.ogg")
         }
-        playPath(name)
+        enqueue(candidates)
     }
 
+    @Synchronized
     fun playAssetName(assetName: String) {
         if (!assetName.endsWith(".ogg")) return
-        playPath(assetName)
+        enqueue(listOf(assetName))
     }
 
-    private fun playPath(fileName: String) {
-        release()
-        var d: AssetFileDescriptor? = null
-        // try current style first
-        try {
-            d = ctx.assets.openFd("coach/${style.folder}/$fileName")
+    @Synchronized
+    private fun enqueue(candidates: List<String>) {
+        val clip = resolve(candidates) ?: return
+        if (clip == currentClip || queue.peekLast() == clip) return
+        if (mp == null && queue.isEmpty()) {
+            playNow(clip)
+        } else {
+            queue.addLast(clip)
+        }
+    }
+
+    private fun resolve(candidates: List<String>): Clip? {
+        for (candidate in candidates) {
+            val names = if (candidate.endsWith(".ogg")) {
+                listOf(candidate, candidate.removeSuffix(".ogg") + ".mp3")
+            } else {
+                listOf(candidate)
+            }
+            for (fileName in names) {
+                val folder = styleOrder().firstOrNull { assetExists(it.folder, fileName) } ?: continue
+                return Clip(folder.folder, fileName)
+            }
+        }
+        return null
+    }
+
+    private fun styleOrder(): List<CoachStyle> =
+        listOf(style) + CoachStyle.values().filter { it != style }
+
+    private fun assetExists(folder: String, fileName: String): Boolean = try {
+        ctx.assets.openFd("coach/${folder}/$fileName").use { true }
+    } catch (_: Exception) {
+        false
+    }
+
+    @Synchronized
+    private fun playNow(clip: Clip) {
+        releaseCurrent()
+        val d = try {
+            ctx.assets.openFd("coach/${clip.folder}/${clip.fileName}")
         } catch (_: Exception) {
+            playNext()
+            return
         }
-        // fallback to other styles
-        if (d == null) {
-            for (s in CoachStyle.values()) {
-                if (s == style) continue
-                try {
-                    d = ctx.assets.openFd("coach/${s.folder}/$fileName")
-                    break
-                } catch (_: Exception) {
-                }
-            }
-        }
-        // fallback to any .ogg in coach
-        if (d == null) {
-            for (s in CoachStyle.values()) {
-                try {
-                    val list = ctx.assets.list("coach/${s.folder}")
-                    val any = list?.firstOrNull { it.endsWith(".ogg") } ?: continue
-                    d = ctx.assets.openFd("coach/${s.folder}/$any")
-                    break
-                } catch (_: Exception) {
-                }
-            }
-        }
-        if (d == null) {
-            try {
-                val alt = fileName.replace(".ogg", ".mp3")
-                try {
-                    d = ctx.assets.openFd("coach/${style.folder}/$alt")
-                } catch (_: Exception) {
-                    for (s in CoachStyle.values()) {
-                        try {
-                            d = ctx.assets.openFd("coach/${s.folder}/$alt")
-                            break
-                        } catch (_: Exception) {
-                        }
-                    }
-                }
-            } catch (_: Exception) {
-            }
-        }
-        if (d == null) return
         afd = d
+        currentClip = clip
         try {
             val m = MediaPlayer()
             val attrs = AudioAttributes.Builder()
@@ -91,32 +103,39 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
             m.prepare()
             val v = volume.coerceIn(0f, 1f)
             try { m.setVolume(v, v) } catch (_: Exception) {}
-            m.setOnCompletionListener {
-                close()
-                try { it.release() } catch (_: Exception) {}
-                if (mp === it) mp = null
+            m.setOnCompletionListener { player ->
+                if (mp === player) {
+                    releaseCurrent()
+                    playNext()
+                }
             }
-            m.setOnErrorListener { it, _, _ ->
-                close()
-                try { it.release() } catch (_: Exception) {}
-                if (mp === it) mp = null
+            m.setOnErrorListener { player, _, _ ->
+                if (mp === player) {
+                    releaseCurrent()
+                    playNext()
+                }
                 true
             }
             mp = m
             m.start()
         } catch (_: Exception) {
-            close()
+            releaseCurrent()
+            playNext()
         }
     }
 
-    private fun close() {
-        try { afd?.close() } catch (_: Exception) {}
-        afd = null
+    @Synchronized
+    private fun playNext() {
+        releaseCurrent()
+        val next = queue.pollFirst() ?: return
+        playNow(next)
     }
 
-    fun stop() {
+    @Synchronized
+    private fun releaseCurrent() {
         val m = mp
         mp = null
+        currentClip = null
         if (m != null) {
             try { if (m.isPlaying) m.stop() } catch (_: Exception) {}
             try { m.release() } catch (_: Exception) {}
@@ -124,6 +143,18 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
         close()
     }
 
+    private fun close() {
+        try { afd?.close() } catch (_: Exception) {}
+        afd = null
+    }
+
+    @Synchronized
+    fun stop() {
+        queue.clear()
+        releaseCurrent()
+    }
+
+    @Synchronized
     fun release() {
         stop()
     }
