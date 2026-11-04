@@ -126,12 +126,13 @@
                     android:id="@+id/counterLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="6dp"
                     android:gravity="center"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="11sp"
-                    app:autoSizeMaxTextSize="11sp"
-                    app:autoSizeMinTextSize="9sp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:autoSizeMaxTextSize="18sp"
+                    app:autoSizeMinTextSize="12sp"
                     app:autoSizeStepGranularity="1sp"
                     app:autoSizeTextType="uniform" />
             </LinearLayout>

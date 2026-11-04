@@ -121,6 +121,20 @@
                     android:textSize="13sp" />
 
                 <TextView
+                    android:id="@+id/coachMainIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_badge"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:textAllCaps="true"
+                    android:textColor="@color/brand"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+                <TextView
                     android:id="@+id/sectionModes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

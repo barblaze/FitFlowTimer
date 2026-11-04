@@ -347,6 +347,7 @@ class SetupActivity : AppCompatActivity() {
             settings.voiceEnabled,
         ) { settings = settings.copy(voiceEnabled = it) }
         setupCoachSelector()
+        updateCoachMainIndicator()
         binding.voiceHint.isVisible = true
 
         binding.outputGroup.check(
@@ -402,6 +403,7 @@ class SetupActivity : AppCompatActivity() {
             settings = settings.copy(voiceEnabled = isChecked)
             block.visibility = if (isChecked) View.VISIBLE else View.GONE
             updateCoachIndicator()
+            updateCoachMainIndicator()
         }
         spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -413,6 +415,7 @@ class SetupActivity : AppCompatActivity() {
                     else -> settings.copy(coachStyle = CoachStyle.TRAINER)
                 }
                 updateCoachIndicator()
+                updateCoachMainIndicator()
             }
             override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
@@ -452,6 +455,22 @@ class SetupActivity : AppCompatActivity() {
 
     private fun updateCoachIndicator() {
         val v = binding.coachCurrentIndicator
+        if (!settings.voiceEnabled) {
+            v.visibility = View.GONE
+            updateCoachMainIndicator()
+            return
+        }
+        v.text = when (settings.coachStyle) {
+            CoachStyle.TRAINER -> getString(R.string.coach_indicator_trainer)
+            CoachStyle.FLAITE -> getString(R.string.coach_indicator_flaite)
+            CoachStyle.NORMAL -> getString(R.string.coach_indicator_normal)
+        }
+        v.visibility = View.VISIBLE
+        updateCoachMainIndicator()
+    }
+
+    private fun updateCoachMainIndicator() {
+        val v = binding.coachMainIndicator
         if (!settings.voiceEnabled) {
             v.visibility = View.GONE
             return
