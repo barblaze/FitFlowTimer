@@ -61,7 +61,17 @@ class TimerEngine(
         prepStartAnnounced = false
         transitionAnnouncedForIndex = -1
         segmentEndMs = clock.nowMs() + segments[0].durationSeconds * 1000L
-        announceSegmentStart(segments[0])
+        val first = segments[0]
+        if (first.type == PhaseType.PREPARATION) {
+            // announced in last 3 seconds
+        } else {
+            // no previous phase, announce immediately
+            when (first.type) {
+                PhaseType.WORK -> announcer.announce(VoiceEvent.WorkStarted(first.round, first.cycle))
+                PhaseType.REST, PhaseType.REST_BETWEEN_CYCLES -> announcer.announce(VoiceEvent.RestStarted(first.durationSeconds))
+                else -> {}
+            }
+        }
     }
 
     fun pause() {
@@ -157,7 +167,6 @@ class TimerEngine(
                     prepStartAnnounced = true
                     announcer.announce(VoiceEvent.SessionStarting((totalMs / 1000L).toInt()))
                 }
-                // Pre-announce next transition during last 3 seconds of current phase
                 if (transitionAnnouncedForIndex != index) {
                     val nextSeg = segments.getOrNull(index + 1)
                     if (nextSeg != null && nextSeg.type != PhaseType.PREPARATION) {
@@ -195,17 +204,16 @@ class TimerEngine(
         }
         lastWholeSecond = -1
         halfwayFired = false
-        transitionAnnouncedForIndex = -1
+        if (transitionAnnouncedForIndex != index - 1) {
+            transitionAnnouncedForIndex = -1
+        } else {
+            // keep as announced
+        }
 
         val previous = segments.getOrNull(index - 1)
         if (previous != null && segment.type == PhaseType.WORK && segment.cycle > previous.cycle) {
             announcer.announce(VoiceEvent.CycleFinished(previous.cycle))
         }
-        if (segment.type == PhaseType.PREPARATION) {
-            announceSegmentStart(segment)
-            return
-        }
-        // Announcements for transitions now handled in tick() during last 3 seconds
     }
 
     private fun finish() {
