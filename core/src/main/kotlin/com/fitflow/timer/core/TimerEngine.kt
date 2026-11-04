@@ -46,6 +46,7 @@ class TimerEngine(
 
     private var prepStartAnnounced = false
     private var transitionAnnouncedForIndex = -1
+    private var sessionStartAnnouncedOnPrepEnd = false
 
     fun start() {
         if (segments.isEmpty()) {
@@ -60,12 +61,12 @@ class TimerEngine(
         halfwayFired = false
         prepStartAnnounced = false
         transitionAnnouncedForIndex = -1
+        sessionStartAnnouncedOnPrepEnd = false
         segmentEndMs = clock.nowMs() + segments[0].durationSeconds * 1000L
         val first = segments[0]
         if (first.type == PhaseType.PREPARATION) {
-            // announced in last 3 seconds
+            // announced at end of preparation
         } else {
-            // no previous phase, announce immediately
             when (first.type) {
                 PhaseType.WORK -> announcer.announce(VoiceEvent.WorkStarted(first.round, first.cycle))
                 PhaseType.REST, PhaseType.REST_BETWEEN_CYCLES -> announcer.announce(VoiceEvent.RestStarted(first.durationSeconds))
@@ -163,10 +164,6 @@ class TimerEngine(
         if (wholeSecond != lastWholeSecond) {
             if (wholeSecond in 1..3) {
                 events += EngineEvent.Countdown(wholeSecond)
-                if (segment.type == PhaseType.PREPARATION && !prepStartAnnounced) {
-                    prepStartAnnounced = true
-                    announcer.announce(VoiceEvent.SessionStarting((totalMs / 1000L).toInt()))
-                }
                 if (transitionAnnouncedForIndex != index) {
                     val nextSeg = segments.getOrNull(index + 1)
                     if (nextSeg != null && nextSeg.type != PhaseType.PREPARATION) {
@@ -195,6 +192,7 @@ class TimerEngine(
     }
 
     private fun moveTo(newIndex: Int, fromNow: Boolean) {
+        val previous = segments.getOrNull(index)
         index = newIndex
         val segment = segments[index]
         segmentEndMs = if (fromNow) {
@@ -204,13 +202,13 @@ class TimerEngine(
         }
         lastWholeSecond = -1
         halfwayFired = false
-        if (transitionAnnouncedForIndex != index - 1) {
-            transitionAnnouncedForIndex = -1
-        } else {
-            // keep as announced
+        transitionAnnouncedForIndex = -1
+
+        if (previous != null && previous.type == PhaseType.PREPARATION && !sessionStartAnnouncedOnPrepEnd) {
+            sessionStartAnnouncedOnPrepEnd = true
+            announcer.announce(VoiceEvent.SessionStarting((totalMs / 1000L).toInt()))
         }
 
-        val previous = segments.getOrNull(index - 1)
         if (previous != null && segment.type == PhaseType.WORK && segment.cycle > previous.cycle) {
             announcer.announce(VoiceEvent.CycleFinished(previous.cycle))
         }
