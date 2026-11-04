@@ -184,7 +184,16 @@ class TimerService : Service() {
 
     private fun onVoiceEvent(event: VoiceEvent) {
         if (settings.voiceEnabled) {
-            try { coachVoice?.play(event) } catch (_: Exception) {}
+            try {
+                if (coachVoice == null) {
+                    try {
+                        val cv = CoachVoicePlayer(this, settings.coachStyle)
+                        cv.volume = settings.coachVoiceVolume
+                        coachVoice = cv
+                    } catch (_: Exception) {}
+                }
+                coachVoice?.play(event)
+            } catch (_: Exception) {}
         }
         val line = when (event) {
             is VoiceEvent.SessionStarting ->

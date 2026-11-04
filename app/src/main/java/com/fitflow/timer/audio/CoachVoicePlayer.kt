@@ -32,7 +32,18 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
 
     private fun playPath(path: String) {
         release()
-        val d = try { ctx.assets.openFd(path) } catch (_: Exception) { return }
+        var d: AssetFileDescriptor? = null
+        try {
+            d = ctx.assets.openFd(path)
+        } catch (_: Exception) {
+            // try fallback
+            try {
+                val alt = path.replace(".ogg", ".mp3")
+                d = ctx.assets.openFd(alt)
+            } catch (_: Exception) {
+                return
+            }
+        }
         afd = d
         try {
             val m = MediaPlayer()

@@ -401,6 +401,7 @@ class SetupActivity : AppCompatActivity() {
         binding.rowVoice.switchValue.setOnCheckedChangeListener { _, isChecked ->
             if (bindingValues) return@setOnCheckedChangeListener
             settings = settings.copy(voiceEnabled = isChecked)
+            store.saveSettings(settings)
             block.visibility = if (isChecked) View.VISIBLE else View.GONE
             updateCoachIndicator()
             updateCoachMainIndicator()
@@ -414,6 +415,7 @@ class SetupActivity : AppCompatActivity() {
                     2 -> settings.copy(coachStyle = CoachStyle.NORMAL)
                     else -> settings.copy(coachStyle = CoachStyle.TRAINER)
                 }
+                store.saveSettings(settings)
                 updateCoachIndicator()
                 updateCoachMainIndicator()
             }
@@ -422,6 +424,7 @@ class SetupActivity : AppCompatActivity() {
         slider.addOnChangeListener { _, value, fromUser ->
             if (bindingValues || !fromUser) return@addOnChangeListener
             settings = settings.copy(coachVoiceVolume = value.coerceIn(0f, 1f))
+            store.saveSettings(settings)
         }
         testBtn.setOnClickListener { testCoachVoice() }
     }
