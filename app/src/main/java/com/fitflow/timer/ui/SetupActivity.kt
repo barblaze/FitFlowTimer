@@ -454,7 +454,7 @@ class SetupActivity : AppCompatActivity() {
         try {
             val player = CoachVoicePlayer(this, style)
             player.volume = settings.coachVoiceVolume.coerceIn(0.3f, 1f)
-            if (player.volume == 0f) player.volume = 0.8f
+            if (player.volume == 0f) player.volume = 1.0f
             lastCoachTestPlayer = player
             player.play(VoiceEvent.SessionStarting(60))
             binding.coachStyleBlock.postDelayed({

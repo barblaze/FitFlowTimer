@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.AssetFileDescriptor
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.media.audiofx.LoudnessEnhancer
 import com.fitflow.timer.core.VoiceEvent
 import com.fitflow.timer.data.CoachStyle
 import java.util.ArrayDeque
@@ -23,8 +24,9 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
     private var mp: MediaPlayer? = null
     private var afd: AssetFileDescriptor? = null
     private var currentClip: Clip? = null
+    private var enhancer: LoudnessEnhancer? = null
 
-    var volume: Float = 0.8f
+    var volume: Float = 1.0f
 
     @Synchronized
     fun play(event: VoiceEvent) {
@@ -95,7 +97,7 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
         try {
             val m = MediaPlayer()
             val attrs = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                 .build()
             m.setAudioAttributes(attrs)
@@ -103,6 +105,13 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
             m.prepare()
             val v = volume.coerceIn(0f, 1f)
             try { m.setVolume(v, v) } catch (_: Exception) {}
+            // Ganancia fija para que la voz no dependa del nivel de grabacion del .ogg
+            try {
+                enhancer = LoudnessEnhancer(m.audioSessionId).apply {
+                    setTargetGain(GAIN_MB)
+                    enabled = true
+                }
+            } catch (_: Exception) {}
             m.setOnCompletionListener { player ->
                 if (mp === player) {
                     releaseCurrent()
@@ -136,6 +145,8 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
         val m = mp
         mp = null
         currentClip = null
+        try { enhancer?.release() } catch (_: Exception) {}
+        enhancer = null
         if (m != null) {
             try { if (m.isPlaying) m.stop() } catch (_: Exception) {}
             try { m.release() } catch (_: Exception) {}
@@ -157,5 +168,10 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
     @Synchronized
     fun release() {
         stop()
+    }
+
+    private companion object {
+        /** +6 dB (milibelios) sobre el archivo original. */
+        const val GAIN_MB = 600
     }
 }

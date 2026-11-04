@@ -27,7 +27,7 @@ data class AppSettings(
     val vibration: Boolean = true,
     val voiceEnabled: Boolean = false,
     val coachStyle: CoachStyle = CoachStyle.TRAINER,
-    val coachVoiceVolume: Float = 0.8f,
+    val coachVoiceVolume: Float = 1.0f,
 )
 
 class ConfigStore(context: Context) {
@@ -100,7 +100,7 @@ class ConfigStore(context: Context) {
                 vibration = json.optBoolean("vibration", true),
                 voiceEnabled = json.optBoolean("voiceEnabled", false),
                 coachStyle = enumValueOrDefault(json.optString("coachStyle"), CoachStyle.TRAINER),
-                coachVoiceVolume = json.optDouble("coachVoiceVolume", 0.8).toFloat().coerceIn(0f, 1f),
+                coachVoiceVolume = json.optDouble("coachVoiceVolume", 1.0).toFloat().coerceIn(0f, 1f),
             )
         } catch (error: Exception) {
             AppSettings()
