@@ -22,28 +22,63 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
             is VoiceEvent.SessionFinished -> "session_finished.ogg"
             else -> return
         }
-        playPath("coach/${style.folder}/$name")
+        playPath(name)
     }
 
     fun playAssetName(assetName: String) {
         if (!assetName.endsWith(".ogg")) return
-        playPath("coach/${style.folder}/$assetName")
+        playPath(assetName)
     }
 
-    private fun playPath(path: String) {
+    private fun playPath(fileName: String) {
         release()
         var d: AssetFileDescriptor? = null
+        // try current style first
         try {
-            d = ctx.assets.openFd(path)
+            d = ctx.assets.openFd("coach/${style.folder}/$fileName")
         } catch (_: Exception) {
-            // try fallback
-            try {
-                val alt = path.replace(".ogg", ".mp3")
-                d = ctx.assets.openFd(alt)
-            } catch (_: Exception) {
-                return
+        }
+        // fallback to other styles
+        if (d == null) {
+            for (s in CoachStyle.values()) {
+                if (s == style) continue
+                try {
+                    d = ctx.assets.openFd("coach/${s.folder}/$fileName")
+                    break
+                } catch (_: Exception) {
+                }
             }
         }
+        // fallback to any .ogg in coach
+        if (d == null) {
+            for (s in CoachStyle.values()) {
+                try {
+                    val list = ctx.assets.list("coach/${s.folder}")
+                    val any = list?.firstOrNull { it.endsWith(".ogg") } ?: continue
+                    d = ctx.assets.openFd("coach/${s.folder}/$any")
+                    break
+                } catch (_: Exception) {
+                }
+            }
+        }
+        if (d == null) {
+            try {
+                val alt = fileName.replace(".ogg", ".mp3")
+                try {
+                    d = ctx.assets.openFd("coach/${style.folder}/$alt")
+                } catch (_: Exception) {
+                    for (s in CoachStyle.values()) {
+                        try {
+                            d = ctx.assets.openFd("coach/${s.folder}/$alt")
+                            break
+                        } catch (_: Exception) {
+                        }
+                    }
+                }
+            } catch (_: Exception) {
+            }
+        }
+        if (d == null) return
         afd = d
         try {
             val m = MediaPlayer()

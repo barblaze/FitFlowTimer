@@ -118,7 +118,7 @@ class TimerService : Service() {
         if (settings.voiceEnabled) {
             try {
                 val cv = CoachVoicePlayer(this, settings.coachStyle)
-                cv.volume = settings.coachVoiceVolume
+                cv.volume = if (settings.coachVoiceVolume <= 0f) 0.8f else settings.coachVoiceVolume
                 coachVoice = cv
             } catch (_: Exception) {}
         }
