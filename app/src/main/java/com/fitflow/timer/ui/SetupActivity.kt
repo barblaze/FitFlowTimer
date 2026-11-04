@@ -347,6 +347,7 @@ class SetupActivity : AppCompatActivity() {
             settings.voiceEnabled,
         ) { settings = settings.copy(voiceEnabled = it) }
         setupCoachSelector()
+        setupCoachQuick()
         updateCoachMainIndicator()
         binding.voiceHint.isVisible = true
 
@@ -403,8 +404,10 @@ class SetupActivity : AppCompatActivity() {
             settings = settings.copy(voiceEnabled = isChecked)
             store.saveSettings(settings)
             block.visibility = if (isChecked) View.VISIBLE else View.GONE
+            binding.coachQuickSwitch.isChecked = isChecked
             updateCoachIndicator()
             updateCoachMainIndicator()
+            updateCoachQuickUI()
         }
         spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -416,8 +419,16 @@ class SetupActivity : AppCompatActivity() {
                     else -> settings.copy(coachStyle = CoachStyle.TRAINER)
                 }
                 store.saveSettings(settings)
+                binding.coachQuickToggleGroup.check(
+                    when (settings.coachStyle) {
+                        CoachStyle.TRAINER -> R.id.coachQuickTrainer
+                        CoachStyle.FLAITE -> R.id.coachQuickFlaite
+                        CoachStyle.NORMAL -> R.id.coachQuickNormal
+                    }
+                )
                 updateCoachIndicator()
                 updateCoachMainIndicator()
+                updateCoachQuickUI()
             }
             override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
@@ -472,10 +483,64 @@ class SetupActivity : AppCompatActivity() {
         updateCoachMainIndicator()
     }
 
+    private fun setupCoachQuick() {
+        binding.coachQuickSwitch.isChecked = settings.voiceEnabled
+        updateCoachQuickUI()
+        binding.coachQuickSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (bindingValues) return@setOnCheckedChangeListener
+            settings = settings.copy(voiceEnabled = isChecked)
+            store.saveSettings(settings)
+            binding.coachStyleBlock.visibility = if (isChecked) View.VISIBLE else View.GONE
+            binding.rowVoice.switchValue.isChecked = isChecked
+            updateCoachIndicator()
+            updateCoachMainIndicator()
+            updateCoachQuickUI()
+        }
+        binding.coachQuickToggleGroup.check(
+            when (settings.coachStyle) {
+                CoachStyle.TRAINER -> R.id.coachQuickTrainer
+                CoachStyle.FLAITE -> R.id.coachQuickFlaite
+                CoachStyle.NORMAL -> R.id.coachQuickNormal
+            }
+        )
+        binding.coachQuickToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked || bindingValues) return@addOnButtonCheckedListener
+            settings = when (checkedId) {
+                R.id.coachQuickFlaite -> settings.copy(coachStyle = CoachStyle.FLAITE)
+                R.id.coachQuickNormal -> settings.copy(coachStyle = CoachStyle.NORMAL)
+                else -> settings.copy(coachStyle = CoachStyle.TRAINER)
+            }
+            store.saveSettings(settings)
+            binding.coachStyleSpinner.setSelection(
+                when (settings.coachStyle) {
+                    CoachStyle.TRAINER -> 0
+                    CoachStyle.FLAITE -> 1
+                    CoachStyle.NORMAL -> 2
+                }
+            )
+            updateCoachIndicator()
+            updateCoachMainIndicator()
+            updateCoachQuickUI()
+        }
+    }
+
+    private fun updateCoachQuickUI() {
+        binding.coachQuickStyleBlock.visibility = if (settings.voiceEnabled) View.VISIBLE else View.GONE
+        binding.coachMainIndicator.visibility = if (settings.voiceEnabled) View.VISIBLE else View.GONE
+        if (settings.voiceEnabled) {
+            binding.coachMainIndicator.text = when (settings.coachStyle) {
+                CoachStyle.TRAINER -> getString(R.string.coach_indicator_trainer)
+                CoachStyle.FLAITE -> getString(R.string.coach_indicator_flaite)
+                CoachStyle.NORMAL -> getString(R.string.coach_indicator_normal)
+            }
+        }
+    }
+
     private fun updateCoachMainIndicator() {
         val v = binding.coachMainIndicator
         if (!settings.voiceEnabled) {
             v.visibility = View.GONE
+            updateCoachQuickUI()
             return
         }
         v.text = when (settings.coachStyle) {
@@ -484,6 +549,7 @@ class SetupActivity : AppCompatActivity() {
             CoachStyle.NORMAL -> getString(R.string.coach_indicator_normal)
         }
         v.visibility = View.VISIBLE
+        updateCoachQuickUI()
     }
 
     override fun onDestroy() {
