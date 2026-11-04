@@ -44,6 +44,9 @@ class TimerEngine(
 
     val currentSegment: PhaseSegment? get() = segments.getOrNull(index)
 
+    private var prepStartAnnounced = false
+    private var transitionAnnouncedForIndex = -1
+
     fun start() {
         if (segments.isEmpty()) {
             isFinished = true
@@ -55,8 +58,9 @@ class TimerEngine(
         isRunning = true
         lastWholeSecond = -1
         halfwayFired = false
+        prepStartAnnounced = false
+        transitionAnnouncedForIndex = -1
         segmentEndMs = clock.nowMs() + segments[0].durationSeconds * 1000L
-        announcer.announce(VoiceEvent.SessionStarting((totalMs / 1000L).toInt()))
         announceSegmentStart(segments[0])
     }
 
@@ -128,6 +132,16 @@ class TimerEngine(
                 events += EngineEvent.Finished
                 return events
             }
+            // Pre-announce transition in last 3 seconds of current phase
+            val nextSeg = segments[index + 1]
+            if (transitionAnnouncedForIndex != index) {
+                when (nextSeg.type) {
+                    PhaseType.WORK -> announcer.announce(VoiceEvent.WorkStarted(nextSeg.round, nextSeg.cycle))
+                    PhaseType.REST, PhaseType.REST_BETWEEN_CYCLES -> announcer.announce(VoiceEvent.RestStarted(nextSeg.durationSeconds))
+                    PhaseType.PREPARATION -> Unit
+                }
+                transitionAnnouncedForIndex = index
+            }
             moveTo(index + 1, fromNow = false)
             events += EngineEvent.SegmentChanged(index, segments[index])
         }
@@ -139,6 +153,22 @@ class TimerEngine(
         if (wholeSecond != lastWholeSecond) {
             if (wholeSecond in 1..3) {
                 events += EngineEvent.Countdown(wholeSecond)
+                if (segment.type == PhaseType.PREPARATION && !prepStartAnnounced) {
+                    prepStartAnnounced = true
+                    announcer.announce(VoiceEvent.SessionStarting((totalMs / 1000L).toInt()))
+                }
+                // Pre-announce next transition during last 3 seconds of current phase
+                if (transitionAnnouncedForIndex != index) {
+                    val nextSeg = segments.getOrNull(index + 1)
+                    if (nextSeg != null && nextSeg.type != PhaseType.PREPARATION) {
+                        when (nextSeg.type) {
+                            PhaseType.WORK -> announcer.announce(VoiceEvent.WorkStarted(nextSeg.round, nextSeg.cycle))
+                            PhaseType.REST, PhaseType.REST_BETWEEN_CYCLES -> announcer.announce(VoiceEvent.RestStarted(nextSeg.durationSeconds))
+                            PhaseType.PREPARATION -> Unit
+                        }
+                        transitionAnnouncedForIndex = index
+                    }
+                }
             }
             lastWholeSecond = wholeSecond
         }
@@ -165,12 +195,17 @@ class TimerEngine(
         }
         lastWholeSecond = -1
         halfwayFired = false
+        transitionAnnouncedForIndex = -1
 
         val previous = segments.getOrNull(index - 1)
         if (previous != null && segment.type == PhaseType.WORK && segment.cycle > previous.cycle) {
             announcer.announce(VoiceEvent.CycleFinished(previous.cycle))
         }
-        announceSegmentStart(segment)
+        if (segment.type == PhaseType.PREPARATION) {
+            announceSegmentStart(segment)
+            return
+        }
+        // Announcements for transitions now handled in tick() during last 3 seconds
     }
 
     private fun finish() {
@@ -181,10 +216,8 @@ class TimerEngine(
 
     private fun announceSegmentStart(segment: PhaseSegment) {
         when (segment.type) {
-            PhaseType.WORK -> announcer.announce(VoiceEvent.WorkStarted(segment.round, segment.cycle))
-            PhaseType.REST, PhaseType.REST_BETWEEN_CYCLES ->
-                announcer.announce(VoiceEvent.RestStarted(segment.durationSeconds))
             PhaseType.PREPARATION -> Unit
+            else -> Unit
         }
     }
 }

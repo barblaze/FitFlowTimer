@@ -630,6 +630,20 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
+                        <TextView
+                            android:id="@+id/coachCurrentIndicator"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="44dp"
+                            android:layout_marginTop="-4dp"
+                            android:layout_marginBottom="8dp"
+                            android:background="@drawable/bg_badge"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp"
+                            android:visibility="gone" />
+
                         <LinearLayout
                             android:id="@+id/coachStyleBlock"
                             android:layout_width="match_parent"

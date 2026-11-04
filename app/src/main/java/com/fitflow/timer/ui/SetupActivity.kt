@@ -51,6 +51,7 @@ class SetupActivity : AppCompatActivity() {
     private var settings: AppSettings = AppSettings()
     private var bindingValues = false
     private var lastSummary: String? = null
+    private var lastCoachTestPlayer: CoachVoicePlayer? = null
 
     private val modeCards by lazy {
         mapOf(
@@ -395,10 +396,12 @@ class SetupActivity : AppCompatActivity() {
         spinner.setSelection(idx)
         slider.value = settings.coachVoiceVolume.coerceIn(0f, 1f)
         block.visibility = if (settings.voiceEnabled) View.VISIBLE else View.GONE
+        updateCoachIndicator()
         binding.rowVoice.switchValue.setOnCheckedChangeListener { _, isChecked ->
             if (bindingValues) return@setOnCheckedChangeListener
             settings = settings.copy(voiceEnabled = isChecked)
             block.visibility = if (isChecked) View.VISIBLE else View.GONE
+            updateCoachIndicator()
         }
         spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -409,6 +412,7 @@ class SetupActivity : AppCompatActivity() {
                     2 -> settings.copy(coachStyle = CoachStyle.NORMAL)
                     else -> settings.copy(coachStyle = CoachStyle.TRAINER)
                 }
+                updateCoachIndicator()
             }
             override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
@@ -420,16 +424,52 @@ class SetupActivity : AppCompatActivity() {
     }
 
     private fun testCoachVoice() {
+        try {
+            lastCoachTestPlayer?.release()
+            lastCoachTestPlayer = null
+        } catch (_: Exception) {}
         val style = when (binding.coachStyleSpinner.selectedItemPosition) {
             0 -> CoachStyle.TRAINER
             1 -> CoachStyle.FLAITE
             2 -> CoachStyle.NORMAL
             else -> CoachStyle.TRAINER
         }
-        val player = CoachVoicePlayer(this, style)
-        player.volume = settings.coachVoiceVolume.coerceIn(0f, 1f)
-        player.play(VoiceEvent.WorkStarted(1, 1))
-        binding.coachStyleBlock.postDelayed({ try { player.release() } catch (_: Exception) {} }, 4000)
+        try {
+            val player = CoachVoicePlayer(this, style)
+            player.volume = settings.coachVoiceVolume.coerceIn(0f, 1f)
+            lastCoachTestPlayer = player
+            player.play(VoiceEvent.WorkStarted(1, 1))
+            binding.coachStyleBlock.postDelayed({
+                try {
+                    lastCoachTestPlayer?.release()
+                    lastCoachTestPlayer = null
+                } catch (_: Exception) {}
+            }, 5000)
+        } catch (e: Exception) {
+            Toast.makeText(this, "No se pudo reproducir la voz", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateCoachIndicator() {
+        val v = binding.coachCurrentIndicator
+        if (!settings.voiceEnabled) {
+            v.visibility = View.GONE
+            return
+        }
+        v.text = when (settings.coachStyle) {
+            CoachStyle.TRAINER -> getString(R.string.coach_indicator_trainer)
+            CoachStyle.FLAITE -> getString(R.string.coach_indicator_flaite)
+            CoachStyle.NORMAL -> getString(R.string.coach_indicator_normal)
+        }
+        v.visibility = View.VISIBLE
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            lastCoachTestPlayer?.release()
+            lastCoachTestPlayer = null
+        } catch (_: Exception) {}
     }
 
     private fun bindRow(

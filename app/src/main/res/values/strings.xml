@@ -86,6 +86,7 @@
     <string name="coach_indicator_trainer">Entrenador</string>
     <string name="coach_indicator_flaite">Modo Flaite</string>
     <string name="coach_indicator_normal">Normal</string>
+    <string name="coach_current_label">Modo entrenador: %1$s</string>
 
     <string name="phase_preparation">PREPARACIÓN</string>
     <string name="phase_work">TRABAJO</string>
