@@ -621,10 +621,8 @@ class SetupActivity : AppCompatActivity() {
 
     private fun commitValue(value: Int, onChange: (Int) -> Unit) {
         onChange(value)
-        if (config.mode != Mode.CUSTOM) {
-            config = config.copy(mode = Mode.CUSTOM)
-            updateModeCards(animated = false)
-        }
+        // El perfil seleccionado se mantiene y guarda sus propios valores
+        store.saveConfig(config)
         refreshSummary()
     }
 
@@ -723,39 +721,8 @@ class SetupActivity : AppCompatActivity() {
     }
 
     private fun applyMode(mode: Mode) {
-        config = when (mode) {
-            Mode.TABATA -> WorkoutConfig(
-                mode = Mode.TABATA,
-                prepSeconds = 10,
-                workSeconds = 20,
-                restSeconds = 10,
-                rounds = 8,
-                cycles = 1,
-                restBetweenCyclesSeconds = 0,
-                announceHalfway = true,
-            )
-            Mode.EMOM -> WorkoutConfig(
-                mode = Mode.EMOM,
-                prepSeconds = 10,
-                workSeconds = 60,
-                restSeconds = 0,
-                rounds = 10,
-                cycles = 1,
-                restBetweenCyclesSeconds = 0,
-                announceHalfway = true,
-            )
-            Mode.AMRAP -> WorkoutConfig(
-                mode = Mode.AMRAP,
-                prepSeconds = 10,
-                workSeconds = 300,
-                restSeconds = 0,
-                rounds = 1,
-                cycles = 1,
-                restBetweenCyclesSeconds = 0,
-                announceHalfway = true,
-            )
-            Mode.CUSTOM -> config.copy(mode = Mode.CUSTOM)
-        }
+        config = store.loadProfile(mode)
+        store.saveConfig(config)
         bindingValues = true
         setRowValue(binding.rowPrep, config.prepSeconds, true)
         setRowValue(binding.rowWork, config.workSeconds, true)

@@ -38,4 +38,23 @@ data class WorkoutConfig(
 
     /** Duracion total del bloque de trabajo de una ronda en segundos. */
     fun roundBlockSeconds(): Int = workSeconds + restSeconds
+
+    companion object {
+        /** Configuracion inicial de cada perfil (Perfil 1 a 4) mientras no se personalice. */
+        fun preset(mode: Mode): WorkoutConfig = when (mode) {
+            Mode.TABATA -> WorkoutConfig(
+                mode = Mode.TABATA, prepSeconds = 10, workSeconds = 20, restSeconds = 10,
+                rounds = 8, cycles = 1, restBetweenCyclesSeconds = 0, announceHalfway = true,
+            )
+            Mode.EMOM -> WorkoutConfig(
+                mode = Mode.EMOM, prepSeconds = 10, workSeconds = 60, restSeconds = 0,
+                rounds = 10, cycles = 1, restBetweenCyclesSeconds = 0, announceHalfway = true,
+            )
+            Mode.AMRAP -> WorkoutConfig(
+                mode = Mode.AMRAP, prepSeconds = 10, workSeconds = 300, restSeconds = 0,
+                rounds = 1, cycles = 1, restBetweenCyclesSeconds = 0, announceHalfway = true,
+            )
+            Mode.CUSTOM -> WorkoutConfig(mode = Mode.CUSTOM, announceHalfway = true)
+        }
+    }
 }

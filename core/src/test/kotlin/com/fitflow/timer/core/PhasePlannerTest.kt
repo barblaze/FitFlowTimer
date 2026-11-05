@@ -107,4 +107,12 @@ class PhasePlannerTest {
         assertEquals(PhaseType.PREPARATION, segments[0].type)
         assertEquals(PhaseType.WORK, segments[1].type)
     }
+
+    @Test
+    fun `each profile has its own preset and keeps its mode`() {
+        Mode.values().forEach { assertEquals(it, WorkoutConfig.preset(it).mode) }
+        assertEquals(8, WorkoutConfig.preset(Mode.TABATA).rounds)
+        assertEquals(60, WorkoutConfig.preset(Mode.EMOM).workSeconds)
+        assertEquals(300, WorkoutConfig.preset(Mode.AMRAP).workSeconds)
+    }
 }

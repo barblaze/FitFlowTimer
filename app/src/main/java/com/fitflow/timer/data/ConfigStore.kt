@@ -37,38 +37,60 @@ class ConfigStore(context: Context) {
     private val prefs = context.applicationContext
         .getSharedPreferences("fitflow", Context.MODE_PRIVATE)
 
+    /** Guarda la configuracion como la ultima usada Y dentro de su propio perfil. */
     fun saveConfig(config: WorkoutConfig) {
-        val json = JSONObject().apply {
-            put("mode", config.mode.name)
-            put("prep", config.prepSeconds)
-            put("work", config.workSeconds)
-            put("rest", config.restSeconds)
-            put("rounds", config.rounds)
-            put("cycles", config.cycles)
-            put("restCycles", config.restBetweenCyclesSeconds)
-            put("halfway", config.announceHalfway)
-        }
-        prefs.edit().putString(KEY_CONFIG, json.toString()).apply()
+        val raw = toJson(config)
+        prefs.edit()
+            .putString(KEY_CONFIG, raw)
+            .putString(profileKey(config.mode), raw)
+            .apply()
     }
 
+    /** Ultima configuracion usada (incluye el perfil que estaba seleccionado). */
     fun loadConfig(): WorkoutConfig {
         val raw = prefs.getString(KEY_CONFIG, null) ?: return WorkoutConfig()
-        return try {
-            val json = JSONObject(raw)
-            WorkoutConfig(
-                mode = enumValueOrDefault(json.optString("mode"), Mode.TABATA),
-                prepSeconds = json.optInt("prep", 10),
-                workSeconds = json.optInt("work", 20),
-                restSeconds = json.optInt("rest", 10),
-                rounds = json.optInt("rounds", 8),
-                cycles = json.optInt("cycles", 1),
-                restBetweenCyclesSeconds = json.optInt("restCycles", 0),
-                announceHalfway = json.optBoolean("halfway", false),
-            )
-        } catch (error: Exception) {
-            WorkoutConfig()
+        val config = fromJson(raw, Mode.TABATA)
+        // Migracion: si ese perfil aun no tenia guardado propio, lo siembra con lo ultimo usado
+        if (!prefs.contains(profileKey(config.mode))) {
+            prefs.edit().putString(profileKey(config.mode), raw).apply()
         }
+        return config
     }
+
+    /** Configuracion guardada de un perfil; si nunca se personalizo, su preset inicial. */
+    fun loadProfile(mode: Mode): WorkoutConfig {
+        val raw = prefs.getString(profileKey(mode), null) ?: return WorkoutConfig.preset(mode)
+        return fromJson(raw, mode).copy(mode = mode)
+    }
+
+    private fun toJson(config: WorkoutConfig): String = JSONObject().apply {
+        put("mode", config.mode.name)
+        put("prep", config.prepSeconds)
+        put("work", config.workSeconds)
+        put("rest", config.restSeconds)
+        put("rounds", config.rounds)
+        put("cycles", config.cycles)
+        put("restCycles", config.restBetweenCyclesSeconds)
+        put("halfway", config.announceHalfway)
+    }.toString()
+
+    private fun fromJson(raw: String, fallbackMode: Mode): WorkoutConfig = try {
+        val json = JSONObject(raw)
+        WorkoutConfig(
+            mode = enumValueOrDefault(json.optString("mode"), fallbackMode),
+            prepSeconds = json.optInt("prep", 10),
+            workSeconds = json.optInt("work", 20),
+            restSeconds = json.optInt("rest", 10),
+            rounds = json.optInt("rounds", 8),
+            cycles = json.optInt("cycles", 1),
+            restBetweenCyclesSeconds = json.optInt("restCycles", 0),
+            announceHalfway = json.optBoolean("halfway", false),
+        )
+    } catch (error: Exception) {
+        WorkoutConfig.preset(fallbackMode)
+    }
+
+    private fun profileKey(mode: Mode) = "profile_${mode.name}"
 
     fun saveSettings(settings: AppSettings) {
         val json = JSONObject().apply {
