@@ -1,6 +1,7 @@
 package com.fitflow.timer.data
 
 import android.content.Context
+import com.fitflow.timer.R
 import com.fitflow.timer.core.Mode
 import com.fitflow.timer.core.WorkoutConfig
 import org.json.JSONObject
@@ -10,10 +11,11 @@ enum class OrientationMode { AUTOMATIC, PORTRAIT, LANDSCAPE }
 /** Media = se mezcla con la musica de otras apps. Sistema = volumen independiente. */
 enum class SoundOutput { MEDIA, SYSTEM }
 
-enum class CoachStyle(val folder: String) {
-    TRAINER("entrenador"),
-    FLAITE("flaite"),
-    NORMAL("normal")
+enum class CoachStyle(val folder: String, val labelRes: Int, val indicatorRes: Int) {
+    TRAINER("entrenador", R.string.coach_style_trainer, R.string.coach_indicator_trainer),
+    FLAITE("flaite", R.string.coach_style_flaite, R.string.coach_indicator_flaite),
+    NORMAL("normal", R.string.coach_style_normal, R.string.coach_indicator_normal),
+    MEMES("memes", R.string.coach_style_memes, R.string.coach_indicator_memes)
 }
 
 data class AppSettings(

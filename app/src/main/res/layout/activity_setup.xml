@@ -188,6 +188,7 @@
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
+                                    android:paddingHorizontal="4dp"
                                     android:text="@string/coach_style_trainer"
                                     android:textAllCaps="false" />
 
@@ -197,6 +198,7 @@
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
+                                    android:paddingHorizontal="4dp"
                                     android:text="@string/coach_style_flaite"
                                     android:textAllCaps="false" />
 
@@ -206,7 +208,18 @@
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
+                                    android:paddingHorizontal="4dp"
                                     android:text="@string/coach_style_normal"
+                                    android:textAllCaps="false" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/coachQuickMemes"
+                                    style="@style/Widget.Material3.Button.OutlinedButton"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:paddingHorizontal="4dp"
+                                    android:text="@string/coach_style_memes"
                                     android:textAllCaps="false" />
                             </com.google.android.material.button.MaterialButtonToggleGroup>
                         </LinearLayout>

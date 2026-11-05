@@ -81,11 +81,13 @@
     <string name="coach_style_trainer">Entrenador</string>
     <string name="coach_style_flaite">Modo Flaite</string>
     <string name="coach_style_normal">Normal</string>
+    <string name="coach_style_memes">Memes</string>
     <string name="coach_volume_label">Volumen voces del entrenador</string>
     <string name="coach_test_button">Probar voz</string>
     <string name="coach_indicator_trainer">Entrenador</string>
     <string name="coach_indicator_flaite">Modo Flaite</string>
     <string name="coach_indicator_normal">Normal</string>
+    <string name="coach_indicator_memes">Modo Memes</string>
     <string name="coach_current_label">Modo entrenador: %1$s</string>
 
     <string name="phase_preparation">PREPARACIÓN</string>

@@ -25,6 +25,7 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
     private var afd: AssetFileDescriptor? = null
     private var currentClip: Clip? = null
     private var enhancer: LoudnessEnhancer? = null
+    private val lastMeme = HashMap<String, String>()
 
     var volume: Float = 1.0f
 
@@ -59,7 +60,32 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
         }
     }
 
+    /**
+     * Modo Memes: solo usa su propia carpeta (coach/memes) y admite variantes por evento.
+     * Para "work_started" sirven work_started.ogg, work_started_1.ogg, work_started_gol.mp3...
+     * y se elige una al azar, evitando repetir la ultima. Sin archivos, el evento queda en silencio.
+     */
+    private fun resolveMemes(candidates: List<String>): Clip? {
+        val files = try {
+            ctx.assets.list("coach/${style.folder}")?.toList().orEmpty()
+        } catch (_: Exception) {
+            emptyList()
+        }
+        for (candidate in candidates) {
+            val base = candidate.removeSuffix(".ogg").removeSuffix(".mp3")
+            val pattern = Regex("^${Regex.escape(base)}([_-].+)?\\.(ogg|mp3)$", RegexOption.IGNORE_CASE)
+            val matches = files.filter { pattern.matches(it) }
+            if (matches.isEmpty()) continue
+            val pool = if (matches.size > 1) matches.filter { it != lastMeme[base] } else matches
+            val pick = pool.random()
+            lastMeme[base] = pick
+            return Clip(style.folder, pick)
+        }
+        return null
+    }
+
     private fun resolve(candidates: List<String>): Clip? {
+        if (style == CoachStyle.MEMES) return resolveMemes(candidates)
         for (candidate in candidates) {
             val names = if (candidate.endsWith(".ogg")) {
                 listOf(candidate, candidate.removeSuffix(".ogg") + ".mp3")
@@ -106,12 +132,15 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
             val v = volume.coerceIn(0f, 1f)
             try { m.setVolume(v, v) } catch (_: Exception) {}
             // Ganancia fija para que la voz no dependa del nivel de grabacion del .ogg
-            try {
-                enhancer = LoudnessEnhancer(m.audioSessionId).apply {
-                    setTargetGain(GAIN_MB)
-                    enabled = true
-                }
-            } catch (_: Exception) {}
+            // Los memes suelen venir ya masterizados fuerte: sin ganancia extra para no saturar
+            if (style != CoachStyle.MEMES) {
+                try {
+                    enhancer = LoudnessEnhancer(m.audioSessionId).apply {
+                        setTargetGain(GAIN_MB)
+                        enabled = true
+                    }
+                } catch (_: Exception) {}
+            }
             m.setOnCompletionListener { player ->
                 if (mp === player) {
                     releaseCurrent()

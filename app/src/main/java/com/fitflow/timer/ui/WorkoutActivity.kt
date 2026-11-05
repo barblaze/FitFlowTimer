@@ -239,11 +239,7 @@ class WorkoutActivity : AppCompatActivity() {
             v.visibility = android.view.View.GONE
             return
         }
-        v.text = when (s.coachStyle) {
-            CoachStyle.TRAINER -> getString(R.string.coach_indicator_trainer)
-            CoachStyle.FLAITE -> getString(R.string.coach_indicator_flaite)
-            CoachStyle.NORMAL -> getString(R.string.coach_indicator_normal)
-        }
+        v.text = getString(s.coachStyle.indicatorRes)
         v.visibility = android.view.View.VISIBLE
     }
 
