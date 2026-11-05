@@ -25,7 +25,6 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
     private var afd: AssetFileDescriptor? = null
     private var currentClip: Clip? = null
     private var enhancer: LoudnessEnhancer? = null
-    private val lastMeme = HashMap<String, String>()
 
     var volume: Float = 1.0f
 
@@ -61,25 +60,15 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
     }
 
     /**
-     * Modo Memes: solo usa su propia carpeta (coach/memes) y admite variantes por evento.
-     * Para "work_started" sirven work_started.ogg, work_started_1.ogg, work_started_gol.mp3...
-     * y se elige una al azar, evitando repetir la ultima. Sin archivos, el evento queda en silencio.
+     * Modo Memes: igual que los demas estilos (un archivo exacto por evento, .ogg o .mp3),
+     * pero solo usa su propia carpeta (coach/memes). Sin archivo, el evento queda en silencio.
      */
     private fun resolveMemes(candidates: List<String>): Clip? {
-        val files = try {
-            ctx.assets.list("coach/${style.folder}")?.toList().orEmpty()
-        } catch (_: Exception) {
-            emptyList()
-        }
         for (candidate in candidates) {
             val base = candidate.removeSuffix(".ogg").removeSuffix(".mp3")
-            val pattern = Regex("^${Regex.escape(base)}([_-].+)?\\.(ogg|mp3)$", RegexOption.IGNORE_CASE)
-            val matches = files.filter { pattern.matches(it) }
-            if (matches.isEmpty()) continue
-            val pool = if (matches.size > 1) matches.filter { it != lastMeme[base] } else matches
-            val pick = pool.random()
-            lastMeme[base] = pick
-            return Clip(style.folder, pick)
+            for (fileName in listOf("$base.ogg", "$base.mp3")) {
+                if (assetExists(style.folder, fileName)) return Clip(style.folder, fileName)
+            }
         }
         return null
     }

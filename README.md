@@ -61,13 +61,8 @@ Si no estan presentes, la APK se firma con la clave de depuracion.
 
 ## Modo Memes
 
-Cuarto estilo de voz (`memes`). Sus audios van en `app/src/main/assets/coach/memes/` y,
-a diferencia de los otros estilos, **no usa audios de otros estilos** y admite
-**varias variantes por evento**: se elige una al azar (sin repetir la anterior).
-
-Para el evento "inicio de trabajo" sirven, por ejemplo: `work_started.ogg`,
-`work_started_1.ogg`, `work_started_gol.mp3`. Lo mismo para el resto de nombres de la
-tabla anterior (`halftime`, `work_finished`, `rest_started`, `cycle_finished`,
-`session_finished`, `session_starting`). Formatos: `.ogg` o `.mp3`. Si un evento no tiene
-archivos, queda en silencio. A este modo no se le aplica ganancia extra, asi que conviene
-que los audios vengan ya a un volumen razonable (aprox. -14 LUFS).
+Cuarto estilo de voz (`memes`). Sus audios van en `app/src/main/assets/coach/memes/` con
+los mismos nombres de la tabla anterior (`.ogg` o `.mp3`), un archivo por evento. A
+diferencia de los otros estilos, **no usa audios de otros estilos**: si falta un archivo,
+ese aviso queda en silencio. No se aplica ganancia extra, asi que conviene que los audios
+vengan ya a un volumen razonable (aprox. -14 LUFS).
