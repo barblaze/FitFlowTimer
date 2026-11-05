@@ -60,21 +60,10 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
     }
 
     /**
-     * Modo Memes: igual que los demas estilos (un archivo exacto por evento, .ogg o .mp3),
-     * pero solo usa su propia carpeta (coach/memes). Sin archivo, el evento queda en silencio.
+     * Busca el archivo del evento SOLO en la carpeta del estilo elegido (coach/<estilo>/).
+     * Nunca mira las carpetas de otros estilos: si el archivo no esta ahi, no suena nada.
      */
-    private fun resolveMemes(candidates: List<String>): Clip? {
-        for (candidate in candidates) {
-            val base = candidate.removeSuffix(".ogg").removeSuffix(".mp3")
-            for (fileName in listOf("$base.ogg", "$base.mp3")) {
-                if (assetExists(style.folder, fileName)) return Clip(style.folder, fileName)
-            }
-        }
-        return null
-    }
-
     private fun resolve(candidates: List<String>): Clip? {
-        if (style == CoachStyle.MEMES) return resolveMemes(candidates)
         for (candidate in candidates) {
             val names = if (candidate.endsWith(".ogg")) {
                 listOf(candidate, candidate.removeSuffix(".ogg") + ".mp3")
@@ -82,15 +71,11 @@ class CoachVoicePlayer(private val ctx: Context, private val style: CoachStyle) 
                 listOf(candidate)
             }
             for (fileName in names) {
-                val folder = styleOrder().firstOrNull { assetExists(it.folder, fileName) } ?: continue
-                return Clip(folder.folder, fileName)
+                if (assetExists(style.folder, fileName)) return Clip(style.folder, fileName)
             }
         }
         return null
     }
-
-    private fun styleOrder(): List<CoachStyle> =
-        listOf(style) + CoachStyle.values().filter { it != style }
 
     private fun assetExists(folder: String, fileName: String): Boolean = try {
         ctx.assets.openFd("coach/${folder}/$fileName").use { true }

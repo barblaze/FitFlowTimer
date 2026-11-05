@@ -62,7 +62,12 @@ Si no estan presentes, la APK se firma con la clave de depuracion.
 ## Modo Memes
 
 Cuarto estilo de voz (`memes`). Sus audios van en `app/src/main/assets/coach/memes/` con
-los mismos nombres de la tabla anterior (`.ogg` o `.mp3`), un archivo por evento. A
-diferencia de los otros estilos, **no usa audios de otros estilos**: si falta un archivo,
-ese aviso queda en silencio. No se aplica ganancia extra, asi que conviene que los audios
-vengan ya a un volumen razonable (aprox. -14 LUFS).
+los mismos nombres de la tabla anterior (`.ogg` o `.mp3`), un archivo por evento.
+No se aplica ganancia extra, asi que conviene que los audios vengan ya a un volumen
+razonable (aprox. -14 LUFS).
+
+## Los estilos nunca se mezclan
+
+Cada estilo solo reproduce los archivos de **su propia carpeta**. Si eliges Entrenador y
+falta `rest_started.ogg` en `coach/entrenador/`, ese aviso no suena, aunque exista en
+`flaite`, `normal` o `memes`.
